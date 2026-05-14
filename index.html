@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>経営実績管理システム - プレゼン用</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        indigo: { 50: '#eef2ff', 500: '#6366f1', 600: '#4f46e5' },
+                        emerald: { 50: '#ecfdf5', 500: '#10b981', 600: '#059669' },
+                        blue: { 50: '#eff6ff', 500: '#3b82f6', 600: '#2563eb' },
+                        orange: { 50: '#fff7ed', 500: '#f97316', 600: '#ea580c' }
+                    },
+                    fontFamily: { sans: ['"Noto Sans JP"', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 全体フォントサイズを1.25倍（20px）に設定 */
+        html { font-size: 20px; }
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: #f1f5f9; color: #1e293b; }
+        
+        .input-card { background: white; border-radius: 1.25rem; border: 2px solid #e2e8f0; box-shadow: 0 6px 10px rgba(0,0,0,0.06); padding: 1.5rem; }
+        
+        /* ラベルと入力欄の調整 */
+        .input-group-label { font-size: 0.9rem; font-weight: 800; color: #475569; margin-bottom: 0.3rem; display: block; }
+        input[type="number"], input[type="date"], input[type="month"] { 
+            border: 2px solid #cbd5e1; 
+            border-radius: 0.6rem; 
+            padding: 0.6rem; 
+            font-size: 1.1rem; 
+            font-weight: 700;
+            width: 100%; 
+            outline: none; 
+            transition: all 0.2s; 
+        }
+        input:focus { border-color: #6366f1; background-color: #f8fafc; }
+        input[type="number"] { text-align: right; }
+
+        .section-title { border-left: 6px solid #6366f1; padding-left: 1rem; font-weight: 900; font-size: 1.5rem; margin-bottom: 1.2rem; color: #0f172a; }
+        .section-title.shop { border-left-color: #10b981; }
+        
+        .location-box { padding: 1.2rem; border-radius: 1rem; border-width: 2px; margin-bottom: 1rem; }
+        
+        /* ボタンの調整 */
+        .history-btn { 
+            font-size: 0.85rem; 
+            padding: 0.6rem 1rem; 
+            border-radius: 0.6rem; 
+            font-weight: 800;
+            border-width: 2px;
+        }
+
+        /* モーダル内のテーブル調整 */
+        .table-sticky-header th {
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            z-index: 10;
+            box-shadow: inset 0 -2px 0 #e2e8f0;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen pb-12">
+
+    <header class="bg-white border-b-2 border-slate-300 mb-6">
+        <div class="max-w-[1600px] mx-auto px-6 py-5 flex justify-between items-center">
+            <h1 class="text-2xl font-black text-slate-900 flex items-center gap-3">
+                <span class="text-indigo-600 text-3xl">🏢</span>
+                経営実績管理システム
+            </h1>
+            <div class="text-lg font-black bg-slate-800 text-white px-4 py-1.5 rounded-full">
+                2026年度実績
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-[1600px] mx-auto px-6">
+        
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            
+            <!-- 展望台エリア管理 -->
+            <div>
+                <h2 class="section-title">展望台エリア管理</h2>
+                <div class="input-card">
+                    <div class="mb-6 pb-6 border-b-2 border-slate-100 flex flex-col gap-3">
+                        <div>
+                            <label class="input-group-label">📅 登録対象日</label>
+                            <input type="date" id="obs-date" class="bg-slate-50">
+                        </div>
+                        <button onclick="openHistory('obs')" class="history-btn w-full bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 transition-all flex items-center justify-center gap-2">
+                            📊 データ一覧表示・ダウンロード
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="input-group-label">売上計画 (円)</label>
+                            <input type="number" id="obs-plan-sales" value="1500000">
+                        </div>
+                        <div>
+                            <label class="input-group-label">売上実績 (円)</label>
+                            <input type="number" id="obs-actual-sales" value="1350000">
+                        </div>
+                        <div>
+                            <label class="input-group-label">入場計画 (名)</label>
+                            <input type="number" id="obs-plan-adm" value="1000">
+                        </div>
+                        <div>
+                            <label class="input-group-label">入場実績 (名)</label>
+                            <input type="number" id="obs-actual-adm" value="920">
+                        </div>
+                    </div>
+                    
+                    <button onclick="saveData('obs')" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl text-lg shadow-md transition-all active:scale-95">
+                        展望台実績を保存
+                    </button>
+                </div>
+            </div>
+
+            <!-- 物産館エリア管理 -->
+            <div>
+                <h2 class="section-title shop">物産館エリア管理</h2>
+                <div class="input-card">
+                    <div class="mb-6 pb-6 border-b-2 border-slate-100 flex flex-col gap-3">
+                        <div>
+                            <label class="input-group-label">📅 登録対象日</label>
+                            <input type="date" id="shop-date" class="bg-slate-50">
+                        </div>
+                        <button onclick="openHistory('shop')" class="history-btn w-full bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 transition-all flex items-center justify-center gap-2">
+                            📊 データ一覧表示・ダウンロード
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="location-box bg-emerald-50 border-emerald-200">
+                            <h4 class="text-lg font-black text-emerald-800 mb-3 flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full"></span> 本店
+                            </h4>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div><label class="input-group-label text-xs">売上実績</label><input type="number" id="shop-h-sales" value="850000"></div>
+                                <div><label class="input-group-label text-xs">点数</label><input type="number" id="shop-h-items" value="240"></div>
+                                <div><label class="input-group-label text-xs">客数</label><input type="number" id="shop-h-cust" value="150"></div>
+                            </div>
+                        </div>
+
+                        <div class="location-box bg-blue-50 border-blue-200">
+                            <h4 class="text-lg font-black text-blue-800 mb-3 flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 bg-blue-500 rounded-full"></span> 大阪
+                            </h4>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div><label class="input-group-label text-xs">売上実績</label><input type="number" id="shop-o-sales" value="450000"></div>
+                                <div><label class="input-group-label text-xs">点数</label><input type="number" id="shop-o-items" value="120"></div>
+                                <div><label class="input-group-label text-xs">客数</label><input type="number" id="shop-o-cust" value="80"></div>
+                            </div>
+                        </div>
+
+                        <div class="location-box bg-orange-50 border-orange-200">
+                            <h4 class="text-lg font-black text-orange-800 mb-3 flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 bg-orange-500 rounded-full"></span> 三の丸
+                            </h4>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div><label class="input-group-label text-xs">売上実績</label><input type="number" id="shop-s-sales" value="200000"></div>
+                                <div><label class="input-group-label text-xs">点数</label><input type="number" id="shop-s-items" value="65"></div>
+                                <div><label class="input-group-label text-xs">客数</label><input type="number" id="shop-s-cust" value="40"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="saveData('shop')" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl text-lg shadow-md transition-all active:scale-95">
+                        物産館実績を保存
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 推移グラフ -->
+        <div class="mt-12 bg-white rounded-[1.5rem] shadow-lg border-2 border-slate-200 p-8">
+            <h3 class="text-xl font-black mb-6 text-slate-800">📈 直近の売上推移（スライド用要約）</h3>
+            <div class="h-[400px] w-full">
+                <canvas id="summaryChart"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL (一覧表示) -->
+    <div id="history-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-6 hidden opacity-0 transition-all duration-300">
+        <div class="bg-white rounded-[1.5rem] shadow-2xl w-[95vw] max-h-[90vh] flex flex-col overflow-hidden border-2 border-slate-200">
+            
+            <div class="px-8 py-6 bg-slate-50 border-b-2 border-slate-200 flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <div id="modal-icon" class="text-3xl"></div>
+                    <div>
+                        <h2 id="modal-title" class="text-2xl font-black text-slate-800"></h2>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-sm font-bold text-slate-500">抽出期間:</span>
+                            <input type="month" id="filter-month" class="text-sm py-0.5 px-2 w-auto border-slate-300" onchange="renderHistoryTable()">
+                        </div>
+                    </div>
+                </div>
+                <button onclick="closeModal()" class="text-lg font-black text-slate-400 hover:text-red-500">✖ 閉じる</button>
+            </div>
+
+            <div class="flex-1 overflow-auto bg-white">
+                <table id="history-table" class="w-full text-base text-left border-separate border-spacing-0 table-sticky-header">
+                    <!-- Dynamic Table -->
+                </table>
+            </div>
+
+            <div class="px-8 py-4 bg-slate-100 border-t-2 border-slate-200 flex justify-between items-center">
+                <div class="text-base font-bold text-slate-500">※ 指定月のデータを表示しています（昇順）</div>
+                <button onclick="downloadCSV()" class="bg-indigo-600 text-white font-black px-8 py-3 rounded-lg text-lg shadow-md hover:bg-indigo-700 active:scale-95 transition-all">
+                    📥 CSVダウンロード
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const state = {
+            obsHistory: [],
+            shopHistory: [],
+            chart: null,
+            type: 'obs'
+        };
+
+        const initData = () => {
+            // ダミーデータを5月と6月分生成
+            const months = ["2026-05", "2026-06"];
+            months.forEach(m => {
+                for (let day = 1; day <= 30; day++) {
+                    const ds = `${m}-${day.toString().padStart(2, '0')}`;
+                    const planS = 1500000;
+                    const actualS = 1100000 + Math.random() * 600000;
+                    const planA = 1000;
+                    const actualA = 700 + Math.random() * 500;
+                    
+                    state.obsHistory.push({
+                        date: ds,
+                        planSales: planS, 
+                        actualSales: Math.floor(actualS),
+                        salesRate: ((actualS / planS) * 100).toFixed(1),
+                        planAdm: planA, 
+                        actualAdm: Math.floor(actualA),
+                        admRate: ((actualA / planA) * 100).toFixed(1)
+                    });
+                    
+                    state.shopHistory.push({
+                        date: ds,
+                        hSales: 700000 + Math.random() * 400000, hItems: 200 + Math.floor(Math.random()*100), hCust: 150 + Math.floor(Math.random()*50),
+                        oSales: 400000 + Math.random() * 200000, oItems: 100 + Math.floor(Math.random()*50), oCust: 80 + Math.floor(Math.random()*30),
+                        sSales: 150000 + Math.random() * 100000, sItems: 50 + Math.floor(Math.random()*20), sCust: 30 + Math.floor(Math.random()*20)
+                    });
+                }
+            });
+        };
+
+        function initChart() {
+            const ctx = document.getElementById('summaryChart').getContext('2d');
+            Chart.defaults.font.size = 16;
+            Chart.defaults.font.weight = 'bold';
+            state.chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: '展望台売上', data: [], borderColor: '#6366f1', borderWidth: 4, pointRadius: 5 },
+                        { label: '物産館合計', data: [], borderColor: '#10b981', borderWidth: 4, pointRadius: 5 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                        y: { ticks: { callback: v => v + '万' } }
+                    }
+                }
+            });
+        }
+
+        function refreshDashboard() {
+            const last7 = state.obsHistory.filter(h => h.date.startsWith("2026-05")).slice(-7);
+            const last7S = state.shopHistory.filter(h => h.date.startsWith("2026-05")).slice(-7);
+            state.chart.data.labels = last7.map(h => h.date.substring(5));
+            state.chart.data.datasets[0].data = last7.map(h => h.actualSales/10000);
+            state.chart.data.datasets[1].data = last7S.map(h => (h.hSales + h.oSales + h.sSales)/10000);
+            state.chart.update();
+        }
+
+        function saveData(type) {
+            alert("実績データを保存しました。");
+            refreshDashboard();
+        }
+
+        function openHistory(type) {
+            state.type = type;
+            const modal = document.getElementById('history-modal');
+            document.getElementById('modal-title').textContent = type === 'obs' ? '展望台 詳細実績一覧' : '物産館 詳細実績一覧';
+            document.getElementById('modal-icon').textContent = type === 'obs' ? '🔭' : '🛍️';
+            document.getElementById('filter-month').value = "2026-05";
+            
+            renderHistoryTable();
+
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.add('opacity-100'), 10);
+        }
+
+        function getFilteredData() {
+            const selectedMonth = document.getElementById('filter-month').value;
+            const rawData = state.type === 'obs' ? state.obsHistory : state.shopHistory;
+            return rawData
+                .filter(h => h.date.startsWith(selectedMonth))
+                .sort((a, b) => a.date.localeCompare(b.date));
+        }
+
+        function renderHistoryTable() {
+            const table = document.getElementById('history-table');
+            const data = getFilteredData();
+            table.innerHTML = '';
+            
+            if(state.type === 'obs') {
+                table.innerHTML = `
+                    <thead class="bg-slate-50 text-slate-700">
+                        <tr>
+                            <th class="p-4 border-b">日付</th>
+                            <th class="p-4 border-b">売上計画</th>
+                            <th class="p-4 border-b">売上実績</th>
+                            <th class="p-4 border-b text-indigo-600">売上達成率</th>
+                            <th class="p-4 border-b">入場計画</th>
+                            <th class="p-4 border-b">入場実績</th>
+                            <th class="p-4 border-b text-indigo-600">入場達成率</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        ${data.map(h => `
+                            <tr class="hover:bg-slate-50">
+                                <td class="p-4 font-bold text-slate-600">${h.date}</td>
+                                <td class="p-4">¥${h.planSales.toLocaleString()}</td>
+                                <td class="p-4 font-bold">¥${h.actualSales.toLocaleString()}</td>
+                                <td class="p-4 font-black ${h.salesRate >= 100 ? 'text-emerald-600' : 'text-orange-600'}">${h.salesRate}%</td>
+                                <td class="p-4">${h.planAdm.toLocaleString()}名</td>
+                                <td class="p-4 font-bold">${h.actualAdm.toLocaleString()}名</td>
+                                <td class="p-4 font-black ${h.admRate >= 100 ? 'text-emerald-600' : 'text-orange-600'}">${h.admRate}%</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+            } else {
+                table.innerHTML = `
+                    <thead class="bg-slate-50 text-slate-700 text-xs">
+                        <tr>
+                            <th class="p-4 border-b text-sm" rowspan="2">日付</th>
+                            <th class="p-2 border-b border-l bg-emerald-50 text-emerald-800 text-center" colspan="3">本店</th>
+                            <th class="p-2 border-b border-l bg-blue-50 text-blue-800 text-center" colspan="3">大阪</th>
+                            <th class="p-2 border-b border-l bg-orange-50 text-orange-800 text-center" colspan="3">三の丸</th>
+                            <th class="p-2 border-b border-l bg-slate-200 text-slate-900 text-center" colspan="2">合計</th>
+                        </tr>
+                        <tr>
+                            <th class="p-2 border-b border-l bg-emerald-50 text-center">売上</th>
+                            <th class="p-2 border-b bg-emerald-50 text-center">点数</th>
+                            <th class="p-2 border-b bg-emerald-50 text-center">客数</th>
+                            <th class="p-2 border-b border-l bg-blue-50 text-center">売上</th>
+                            <th class="p-2 border-b bg-blue-50 text-center">点数</th>
+                            <th class="p-2 border-b bg-blue-50 text-center">客数</th>
+                            <th class="p-2 border-b border-l bg-orange-50 text-center">売上</th>
+                            <th class="p-2 border-b bg-orange-50 text-center">点数</th>
+                            <th class="p-2 border-b bg-orange-50 text-center">客数</th>
+                            <th class="p-2 border-b border-l bg-slate-100 text-center">合計売上</th>
+                            <th class="p-2 border-b bg-slate-100 text-center">客単価</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y text-sm">
+                        ${data.map(h => {
+                            const totalSales = h.hSales + h.oSales + h.sSales;
+                            const totalCust = h.hCust + h.oCust + h.sCust;
+                            const unitPrice = totalCust > 0 ? Math.floor(totalSales / totalCust) : 0;
+                            return `
+                                <tr class="hover:bg-slate-50">
+                                    <td class="p-3 font-bold text-slate-600 border-r">${h.date.substring(5)}</td>
+                                    <td class="p-2 text-right">¥${Math.floor(h.hSales).toLocaleString()}</td>
+                                    <td class="p-2 text-right">${h.hItems}</td>
+                                    <td class="p-2 text-right border-r">${h.hCust}</td>
+                                    <td class="p-2 text-right">¥${Math.floor(h.oSales).toLocaleString()}</td>
+                                    <td class="p-2 text-right">${h.oItems}</td>
+                                    <td class="p-2 text-right border-r">${h.oCust}</td>
+                                    <td class="p-2 text-right">¥${Math.floor(h.sSales).toLocaleString()}</td>
+                                    <td class="p-2 text-right">${h.sItems}</td>
+                                    <td class="p-2 text-right border-r">${h.sCust}</td>
+                                    <td class="p-2 text-right font-bold bg-slate-50">¥${Math.floor(totalSales).toLocaleString()}</td>
+                                    <td class="p-2 text-right font-black text-emerald-600 bg-slate-50">¥${unitPrice.toLocaleString()}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                `;
+            }
+            
+            if (data.length === 0) {
+                table.innerHTML = '<tbody><tr><td colspan="12" class="p-12 text-center text-slate-400 font-bold">該当月のデータがありません</td></tr></tbody>';
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('history-modal');
+            modal.classList.remove('opacity-100');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function downloadCSV() {
+            const data = getFilteredData();
+            if (data.length === 0) {
+                alert("出力するデータがありません。");
+                return;
+            }
+
+            const selectedMonth = document.getElementById('filter-month').value;
+            let csvContent = "";
+            let fileName = "";
+
+            if (state.type === 'obs') {
+                fileName = `展望台_実績_${selectedMonth}.csv`;
+                csvContent = "日付,売上計画,売上実績,売上達成率,入場計画,入場実績,入場達成率\n";
+                data.forEach(h => {
+                    csvContent += `${h.date},${h.planSales},${h.actualSales},${h.salesRate}%,${h.planAdm},${h.actualAdm},${h.admRate}%\n`;
+                });
+            } else {
+                fileName = `物産館_拠点別実績_${selectedMonth}.csv`;
+                csvContent = "日付,本店_売上,本店_点数,本店_客数,大阪_売上,大阪_点数,大阪_客数,三の丸_売上,三の丸_点数,三の丸_客数,合計売上,客単価\n";
+                data.forEach(h => {
+                    const totalSales = Math.floor(h.hSales + h.oSales + h.sSales);
+                    const totalCust = h.hCust + h.oCust + h.sCust;
+                    const unitPrice = totalCust > 0 ? Math.floor(totalSales / totalCust) : 0;
+                    csvContent += `${h.date},${Math.floor(h.hSales)},${h.hItems},${h.hCust},${Math.floor(h.oSales)},${h.oItems},${h.oCust},${Math.floor(h.sSales)},${h.sItems},${h.sCust},${totalSales},${unitPrice}\n`;
+                });
+            }
+
+            // UTF-8 with BOM for Excel compatibility
+            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            const blob = new Blob([bom, csvContent], { type: "text/csv;charset=utf-8;" });
+            
+            // Generate download link
+            const link = document.createElement("a");
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", fileName);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        window.onload = () => {
+            initData();
+            document.getElementById('obs-date').value = "2026-05-14";
+            document.getElementById('shop-date').value = "2026-05-14";
+            initChart();
+            refreshDashboard();
+        };
+    </script>
+</body>
+</html>
