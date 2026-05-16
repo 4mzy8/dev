@@ -1,470 +1,752 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>経営実績管理システム - プレゼン用</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ORIZURU TOWER | Executive Dashboard</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        indigo: { 50: '#eef2ff', 500: '#6366f1', 600: '#4f46e5' },
-                        emerald: { 50: '#ecfdf5', 500: '#10b981', 600: '#059669' },
-                        blue: { 50: '#eff6ff', 500: '#3b82f6', 600: '#2563eb' },
-                        orange: { 50: '#fff7ed', 500: '#f97316', 600: '#ea580c' }
-                    },
-                    fontFamily: { sans: ['"Noto Sans JP"', 'sans-serif'] }
-                }
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', 'Shippori Mincho', serif;
+            background-color: #fcfbf9;
+            color: #4a4a4a;
+        }
+
+        .theme-wood { color: #8B5E3C; }
+        .bg-theme-wood { background-color: #8B5E3C; }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(139, 94, 60, 0.15);
+            box-shadow: 0 4px 15px -1px rgba(139, 94, 60, 0.05);
+            backdrop-filter: blur(8px);
+        }
+
+        .font-jp {
+            font-family: 'Shippori Mincho', serif;
+        }
+
+        .period-btn {
+            transition: all 0.3s ease;
+        }
+
+        .period-btn.active {
+            background-color: #8B5E3C;
+            color: white;
+            border-color: #8B5E3C;
+        }
+
+        .period-btn:not(.active):hover {
+            background-color: #f3ece7;
+            color: #8B5E3C;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
-    </script>
-    <style>
-        /* 全体フォントサイズを1.25倍（20px）に設定 */
-        html { font-size: 20px; }
-        body { font-family: 'Noto Sans JP', sans-serif; background-color: #f1f5f9; color: #1e293b; }
-        
-        .input-card { background: white; border-radius: 1.25rem; border: 2px solid #e2e8f0; box-shadow: 0 6px 10px rgba(0,0,0,0.06); padding: 1.5rem; }
-        
-        /* ラベルと入力欄の調整 */
-        .input-group-label { font-size: 0.9rem; font-weight: 800; color: #475569; margin-bottom: 0.3rem; display: block; }
-        input[type="number"], input[type="date"], input[type="month"] { 
-            border: 2px solid #cbd5e1; 
-            border-radius: 0.6rem; 
-            padding: 0.6rem; 
-            font-size: 1.1rem; 
-            font-weight: 700;
-            width: 100%; 
-            outline: none; 
-            transition: all 0.2s; 
-        }
-        input:focus { border-color: #6366f1; background-color: #f8fafc; }
-        input[type="number"] { text-align: right; }
 
-        .section-title { border-left: 6px solid #6366f1; padding-left: 1rem; font-weight: 900; font-size: 1.5rem; margin-bottom: 1.2rem; color: #0f172a; }
-        .section-title.shop { border-left-color: #10b981; }
-        
-        .location-box { padding: 1.2rem; border-radius: 1rem; border-width: 2px; margin-bottom: 1rem; }
-        
-        /* ボタンの調整 */
-        .history-btn { 
-            font-size: 0.85rem; 
-            padding: 0.6rem 1rem; 
-            border-radius: 0.6rem; 
-            font-weight: 800;
-            border-width: 2px;
+        .plan-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 4px;
         }
 
-        /* モーダル内のテーブル調整 */
-        .table-sticky-header th {
-            position: sticky;
-            top: 0;
-            background: #f8fafc;
-            z-index: 10;
-            box-shadow: inset 0 -2px 0 #e2e8f0;
+        .plan-value {
+            font-size: 15px;
+            font-weight: bold;
+            color: #374151;
         }
     </style>
 </head>
-<body class="antialiased min-h-screen pb-12">
 
-    <header class="bg-white border-b-2 border-slate-300 mb-6">
-        <div class="max-w-[1600px] mx-auto px-6 py-5 flex justify-between items-center">
-            <h1 class="text-2xl font-black text-slate-900 flex items-center gap-3">
-                <span class="text-indigo-600 text-3xl">🏢</span>
-                経営実績管理システム
-            </h1>
-            <div class="text-lg font-black bg-slate-800 text-white px-4 py-1.5 rounded-full">
-                2026年度実績
+<body class="bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] flex flex-col min-h-screen">
+
+<header class="bg-white/80 backdrop-blur-md border-b border-[#8B5E3C]/20 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-20 items-center">
+
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-theme-wood rounded-tr-xl rounded-bl-xl flex items-center justify-center text-white shadow-md">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.5"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 12h10v10l10-10H12V2z"/>
+                    </svg>
+                </div>
+
+                <div>
+                    <h1 class="text-2xl font-jp font-bold tracking-widest text-[#5e4028]">
+                        おりづるタワー
+                    </h1>
+
+                    <p class="text-[10px] text-[#8B5E3C] uppercase tracking-widest font-sans">
+                        Management Dashboard
+                    </p>
+                </div>
             </div>
-        </div>
-    </header>
 
-    <main class="max-w-[1600px] mx-auto px-6">
-        
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-            
-            <!-- 展望台エリア管理 -->
-            <div>
-                <h2 class="section-title">展望台エリア</h2>
-                <div class="input-card">
-                    <div class="mb-6 pb-6 border-b-2 border-slate-100 flex flex-col gap-3">
-                        <div>
-                            <label class="input-group-label">📅 登録対象日</label>
-                            <input type="date" id="obs-date" class="bg-slate-50">
-                        </div>
-                        <button onclick="openHistory('obs')" class="history-btn w-full bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 transition-all flex items-center justify-center gap-2">
-                            📊 データ一覧表示・ダウンロード
-                        </button>
-                    </div>
+            <div class="flex items-center gap-6">
 
-                    <div class="grid grid-cols-2 gap-6">
-                        <div>
-                            <label class="input-group-label">売上計画 (円)</label>
-                            <input type="number" id="obs-plan-sales" value="1500000">
-                        </div>
-                        <div>
-                            <label class="input-group-label">売上実績 (円)</label>
-                            <input type="number" id="obs-actual-sales" value="1350000">
-                        </div>
-                        <div>
-                            <label class="input-group-label">入場計画 (名)</label>
-                            <input type="number" id="obs-plan-adm" value="1000">
-                        </div>
-                        <div>
-                            <label class="input-group-label">入場実績 (名)</label>
-                            <input type="number" id="obs-actual-adm" value="920">
-                        </div>
-                    </div>
-                    
-                    <button onclick="saveData('obs')" class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-xl text-lg shadow-md transition-all active:scale-95">
-                        展望台実績を保存
+                <!-- 月次・年次 -->
+                <div class="flex bg-[#f3ece7] p-1 rounded-lg border border-[#e0d6ce]">
+                    <button onclick="updateDashboard('monthly')" id="btn-monthly"
+                            class="period-btn active px-6 py-1.5 text-xs font-bold rounded-md border border-transparent">
+                        月次
+                    </button>
+
+                    <button onclick="updateDashboard('yearly')" id="btn-yearly"
+                            class="period-btn px-6 py-1.5 text-xs font-bold rounded-md border border-transparent text-[#8B5E3C]">
+                        年次
                     </button>
                 </div>
-            </div>
 
-            <!-- 物産館エリア管理 -->
-            <div>
-                <h2 class="section-title shop">物産館エリア</h2>
-                <div class="input-card">
-                    <div class="mb-6 pb-6 border-b-2 border-slate-100 flex flex-col gap-3">
-                        <div>
-                            <label class="input-group-label">📅 登録対象日</label>
-                            <input type="date" id="shop-date" class="bg-slate-50">
-                        </div>
-                        <button onclick="openHistory('shop')" class="history-btn w-full bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 transition-all flex items-center justify-center gap-2">
-                            📊 データ一覧表示・ダウンロード
-                        </button>
-                    </div>
+                <!-- 日付 -->
+                <input type="date"
+                       id="target-date"
+                       onchange="refreshDashboard()"
+                       class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
 
-                    <div class="space-y-4">
-                        <div class="location-box bg-emerald-50 border-emerald-200">
-                            <h4 class="text-lg font-black text-emerald-800 mb-3 flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full"></span> 本店
-                            </h4>
-                            <div class="grid grid-cols-3 gap-3">
-                                <div><label class="input-group-label text-xs">売上実績</label><input type="number" id="shop-h-sales" value="850000"></div>
-                                <div><label class="input-group-label text-xs">点数</label><input type="number" id="shop-h-items" value="240"></div>
-                                <div><label class="input-group-label text-xs">客数</label><input type="number" id="shop-h-cust" value="150"></div>
-                            </div>
-                        </div>
-
-                        <div class="location-box bg-blue-50 border-blue-200">
-                            <h4 class="text-lg font-black text-blue-800 mb-3 flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 bg-blue-500 rounded-full"></span> 大阪
-                            </h4>
-                            <div class="grid grid-cols-3 gap-3">
-                                <div><label class="input-group-label text-xs">売上実績</label><input type="number" id="shop-o-sales" value="450000"></div>
-                                <div><label class="input-group-label text-xs">点数</label><input type="number" id="shop-o-items" value="120"></div>
-                                <div><label class="input-group-label text-xs">客数</label><input type="number" id="shop-o-cust" value="80"></div>
-                            </div>
-                        </div>
-
-                        <div class="location-box bg-orange-50 border-orange-200">
-                            <h4 class="text-lg font-black text-orange-800 mb-3 flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 bg-orange-500 rounded-full"></span> 三の丸
-                            </h4>
-                            <div class="grid grid-cols-3 gap-3">
-                                <div><label class="input-group-label text-xs">売上実績</label><input type="number" id="shop-s-sales" value="200000"></div>
-                                <div><label class="input-group-label text-xs">点数</label><input type="number" id="shop-s-items" value="65"></div>
-                                <div><label class="input-group-label text-xs">客数</label><input type="number" id="shop-s-cust" value="40"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button onclick="saveData('shop')" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl text-lg shadow-md transition-all active:scale-95">
-                        物産館実績を保存
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 推移グラフ -->
-        <div class="mt-12 bg-white rounded-[1.5rem] shadow-lg border-2 border-slate-200 p-8">
-            <h3 class="text-xl font-black mb-6 text-slate-800">📈 直近の売上推移（スライド用要約）</h3>
-            <div class="h-[400px] w-full">
-                <canvas id="summaryChart"></canvas>
-            </div>
-        </div>
-    </main>
-
-    <!-- MODAL (一覧表示) -->
-    <div id="history-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] flex items-center justify-center p-6 hidden opacity-0 transition-all duration-300">
-        <div class="bg-white rounded-[1.5rem] shadow-2xl w-[95vw] max-h-[90vh] flex flex-col overflow-hidden border-2 border-slate-200">
-            
-            <div class="px-8 py-6 bg-slate-50 border-b-2 border-slate-200 flex justify-between items-center">
-                <div class="flex items-center gap-4">
-                    <div id="modal-icon" class="text-3xl"></div>
-                    <div>
-                        <h2 id="modal-title" class="text-2xl font-black text-slate-800"></h2>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span class="text-sm font-bold text-slate-500">抽出期間:</span>
-                            <input type="month" id="filter-month" class="text-sm py-0.5 px-2 w-auto border-slate-300" onchange="renderHistoryTable()">
-                        </div>
+                <div class="text-right hidden md:block">
+                    <div class="text-sm font-bold text-gray-700 font-jp"
+                         id="current-date-display">
                     </div>
                 </div>
-                <button onclick="closeModal()" class="text-lg font-black text-slate-400 hover:text-red-500">✖ 閉じる</button>
-            </div>
 
-            <div class="flex-1 overflow-auto bg-white">
-                <table id="history-table" class="w-full text-base text-left border-separate border-spacing-0 table-sticky-header">
-                    <!-- Dynamic Table -->
-                </table>
-            </div>
-
-            <div class="px-8 py-4 bg-slate-100 border-t-2 border-slate-200 flex justify-between items-center">
-                <div class="text-base font-bold text-slate-500">※ 指定月のデータを表示しています（昇順）</div>
-                <button onclick="downloadCSV()" class="bg-indigo-600 text-white font-black px-8 py-3 rounded-lg text-lg shadow-md hover:bg-indigo-700 active:scale-95 transition-all">
-                    📥 CSVダウンロード
-                </button>
             </div>
         </div>
     </div>
+</header>
 
-    <script>
-        const state = {
-            obsHistory: [],
-            shopHistory: [],
-            chart: null,
-            type: 'obs'
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 flex-grow">
+
+    <!-- 展望台 -->
+    <section class="fade-in" style="animation-delay: 0.1s;">
+        <div class="flex items-center gap-2 mb-4">
+            <span class="w-1 h-6 bg-theme-wood"></span>
+
+            <h2 class="text-xl font-jp font-bold text-[#5e4028]">
+                展望台エリア
+                <span class="text-sm font-normal text-gray-500 ml-2">
+                    Observatory Performance
+                </span>
+            </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- 売上 -->
+            <div class="glass-panel p-6 rounded-xl border-t-4 border-[#D65A31] flex flex-col">
+
+                <div class="text-center mb-4">
+                    <div class="text-sm text-gray-500 font-bold uppercase mb-2">
+                        売上
+                    </div>
+
+                    <div class="text-4xl font-bold text-gray-800 font-sans tracking-tight"
+                         id="obs-total-sales">
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-dashed border-gray-200">
+
+                    <div class="grid grid-cols-2 gap-2 text-center mb-3">
+
+                        <div>
+                            <div class="text-[10px] text-gray-400 mb-1">
+                                計画値
+                            </div>
+
+                            <div class="text-sm font-bold text-gray-700 font-sans"
+                                 id="obs-sales-target">
+                            </div>
+                        </div>
+
+                        <div class="border-l border-gray-100">
+                            <div class="text-[10px] text-gray-400 mb-1">
+                                達成率
+                            </div>
+
+                            <div class="text-sm font-bold text-[#D65A31] font-sans"
+                                 id="obs-sales-rate">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                        <div id="obs-sales-bar"
+                             class="bg-[#D65A31] h-2 rounded-full transition-all duration-500">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 入場者数 -->
+            <div class="glass-panel p-6 rounded-xl border-t-4 border-[#2563eb] flex flex-col">
+
+                <div class="text-center mb-4">
+                    <div class="text-sm text-gray-500 font-bold uppercase mb-2">
+                        入場者数
+                    </div>
+
+                    <div class="text-4xl font-bold text-gray-800 font-sans tracking-tight"
+                         id="obs-total-visitors">
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-dashed border-gray-200">
+
+                    <div class="grid grid-cols-2 gap-2 text-center mb-3">
+
+                        <div>
+                            <div class="text-[10px] text-gray-400 mb-1">
+                                計画値
+                            </div>
+
+                            <div class="text-sm font-bold text-gray-700 font-sans"
+                                 id="obs-visitors-target">
+                            </div>
+                        </div>
+
+                        <div class="border-l border-gray-100">
+                            <div class="text-[10px] text-gray-400 mb-1">
+                                達成率
+                            </div>
+
+                            <div class="text-sm font-bold text-[#2563eb] font-sans"
+                                 id="obs-visitors-rate">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                        <div id="obs-visitors-bar"
+                             class="bg-[#2563eb] h-2 rounded-full transition-all duration-500">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- IPPIN -->
+    <section class="fade-in" style="animation-delay: 0.2s;">
+
+        <div class="flex items-center gap-2 mb-4 pt-4 border-t border-dashed border-gray-300">
+            <span class="w-1 h-6 bg-[#6b8c42]"></span>
+
+            <h2 class="text-xl font-jp font-bold text-[#5e4028]">
+                物産館 IPPIN
+                <span class="text-sm font-normal text-gray-500 ml-2">
+                    Retail Performance
+                </span>
+            </h2>
+        </div>
+
+        <!-- 元の横棒グラフ -->
+        <div class="glass-panel p-6 rounded-xl mb-6">
+            <div class="h-40">
+                <canvas id="chartIppinCompare"></canvas>
+            </div>
+        </div>
+
+        <!-- 店舗カード -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <!-- 本店 -->
+            <div class="glass-panel p-0 rounded-xl overflow-hidden">
+
+                <div class="bg-[#5e4028] p-3 flex justify-between items-center text-white">
+                    <div class="font-jp font-bold text-lg">
+                        おりづるタワー本店
+                    </div>
+
+                    <div class="text-xs opacity-75">
+                        HIROSHIMA
+                    </div>
+                </div>
+
+                <div class="p-5 space-y-4">
+
+                    <div class="flex justify-between items-end border-b border-dashed border-gray-200 pb-2">
+                        <span class="text-xs text-gray-500">売上</span>
+
+                        <span class="text-2xl font-bold text-[#5e4028] font-sans"
+                              id="ippin-honten-sales">
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+
+                        <div>
+                            <div class="plan-label">計画値</div>
+                            <div class="plan-value" id="ippin-honten-plan"></div>
+                        </div>
+
+                        <div>
+                            <div class="plan-label">達成率</div>
+                            <div class="plan-value text-[#D65A31]" id="ippin-honten-rate"></div>
+                        </div>
+
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 text-center">
+
+                        <div>
+                            <div class="text-[10px] text-gray-400">粗利率</div>
+                            <div class="font-bold text-gray-700" id="ippin-honten-gp"></div>
+                        </div>
+
+                        <div class="border-l border-gray-100">
+                            <div class="text-[10px] text-gray-400">客数</div>
+                            <div class="font-bold text-gray-700" id="ippin-honten-cust"></div>
+                        </div>
+
+                        <div class="border-l border-gray-100">
+                            <div class="text-[10px] text-gray-400">客単価</div>
+                            <div class="font-bold text-[#D65A31]" id="ippin-honten-avg"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- KITTE -->
+            <div class="glass-panel p-0 rounded-xl overflow-hidden">
+
+                <div class="bg-[#1e40af] p-3 flex justify-between items-center text-white">
+                    <div class="font-jp font-bold text-lg">
+                        KITTE大阪店
+                    </div>
+
+                    <div class="text-xs opacity-75">
+                        OSAKA
+                    </div>
+                </div>
+
+                <div class="p-5 space-y-4">
+
+                    <div class="flex justify-between items-end border-b border-dashed border-gray-200 pb-2">
+                        <span class="text-xs text-gray-500">売上</span>
+
+                        <span class="text-2xl font-bold text-[#1e40af] font-sans"
+                              id="ippin-kitte-sales">
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+
+                        <div>
+                            <div class="plan-label">計画値</div>
+                            <div class="plan-value" id="ippin-kitte-plan"></div>
+                        </div>
+
+                        <div>
+                            <div class="plan-label">達成率</div>
+                            <div class="plan-value text-[#D65A31]" id="ippin-kitte-rate"></div>
+                        </div>
+
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 text-center">
+
+                        <div>
+                            <div class="text-[10px] text-gray-400">粗利率</div>
+                            <div class="font-bold text-gray-700" id="ippin-kitte-gp"></div>
+                        </div>
+
+                        <div class="border-l border-gray-100">
+                            <div class="text-[10px] text-gray-400">客数</div>
+                            <div class="font-bold text-gray-700" id="ippin-kitte-cust"></div>
+                        </div>
+
+                        <div class="border-l border-gray-100">
+                            <div class="text-[10px] text-gray-400">客単価</div>
+                            <div class="font-bold text-[#D65A31]" id="ippin-kitte-avg"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 三の丸 -->
+            <div class="glass-panel p-0 rounded-xl overflow-hidden">
+
+                <div class="bg-[#4d7c0f] p-3 flex justify-between items-center text-white">
+                    <div class="font-jp font-bold text-lg">
+                        広島城三の丸店
+                    </div>
+
+                    <div class="text-xs opacity-75">
+                        CASTLE
+                    </div>
+                </div>
+
+                <div class="p-5 space-y-4">
+
+                    <div class="flex justify-between items-end border-b border-dashed border-gray-200 pb-2">
+                        <span class="text-xs text-gray-500">売上</span>
+
+                        <span class="text-2xl font-bold text-[#4d7c0f] font-sans"
+                              id="ippin-sanno-sales">
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+
+                        <div>
+                            <div class="plan-label">計画値</div>
+                            <div class="plan-value" id="ippin-sanno-plan"></div>
+                        </div>
+
+                        <div>
+                            <div class="plan-label">達成率</div>
+                            <div class="plan-value text-[#D65A31]" id="ippin-sanno-rate"></div>
+                        </div>
+
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 text-center">
+
+                        <div>
+                            <div class="text-[10px] text-gray-400">粗利率</div>
+                            <div class="font-bold text-gray-700" id="ippin-sanno-gp"></div>
+                        </div>
+
+                        <div class="border-l border-gray-100">
+                            <div class="text-[10px] text-gray-400">客数</div>
+                            <div class="font-bold text-gray-700" id="ippin-sanno-cust"></div>
+                        </div>
+
+                        <div class="border-l border-gray-100">
+                            <div class="text-[10px] text-gray-400">客単価</div>
+                            <div class="font-bold text-[#D65A31]" id="ippin-sanno-avg"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<footer class="bg-gray-100 border-t border-gray-200 py-6 mt-8">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+
+        <p class="text-sm text-gray-500 font-bold bg-yellow-100 inline-block px-4 py-2 rounded-full border border-yellow-200">
+            ⚠️ 開発中のモックです。数値はダミーです。
+        </p>
+
+    </div>
+</footer>
+
+<script>
+
+    Chart.defaults.font.family =
+        "'Inter', 'Shippori Mincho', sans-serif";
+
+    Chart.defaults.color = '#6b7280';
+
+    const C_HONTEN = '#5e4028';
+    const C_KITTE = '#1e40af';
+    const C_SANNO = '#4d7c0f';
+
+    let charts = {};
+    let currentPeriod = 'monthly';
+
+    // 日付初期化
+    const today = new Date();
+    document.getElementById('target-date').value =
+        today.toISOString().split('T')[0];
+
+    // ランダム
+    const rand = (min, max) =>
+        Math.floor(Math.random() * (max - min + 1)) + min;
+
+    // フォーマット
+    const fmtYen = (num) =>
+        '¥' + Math.round(num).toLocaleString();
+
+    const fmtNum = (num) =>
+        Math.round(num).toLocaleString();
+
+    // 展望台データ
+    function getObsData(period) {
+
+        const base = period === 'monthly' ? 1 : 12;
+
+        const sales = rand(1100000, 1800000) * base;
+        const salesPlan = sales * (1 + (Math.random() * 0.25));
+
+        const visitors = rand(700, 1300) * base;
+        const visitorsPlan = visitors * (1 + (Math.random() * 0.2));
+
+        return {
+            sales,
+            salesPlan,
+            visitors,
+            visitorsPlan
         };
+    }
 
-        const initData = () => {
-            // ダミーデータを5月と6月分生成
-            const months = ["2026-05", "2026-06"];
-            months.forEach(m => {
-                for (let day = 1; day <= 30; day++) {
-                    const ds = `${m}-${day.toString().padStart(2, '0')}`;
-                    const planS = 1500000;
-                    const actualS = 1100000 + Math.random() * 600000;
-                    const planA = 1000;
-                    const actualA = 700 + Math.random() * 500;
-                    
-                    state.obsHistory.push({
-                        date: ds,
-                        planSales: planS, 
-                        actualSales: Math.floor(actualS),
-                        salesRate: ((actualS / planS) * 100).toFixed(1),
-                        planAdm: planA, 
-                        actualAdm: Math.floor(actualA),
-                        admRate: ((actualA / planA) * 100).toFixed(1)
-                    });
-                    
-                    state.shopHistory.push({
-                        date: ds,
-                        hSales: 700000 + Math.random() * 400000, hItems: 200 + Math.floor(Math.random()*100), hCust: 150 + Math.floor(Math.random()*50),
-                        oSales: 400000 + Math.random() * 200000, oItems: 100 + Math.floor(Math.random()*50), oCust: 80 + Math.floor(Math.random()*30),
-                        sSales: 150000 + Math.random() * 100000, sItems: 50 + Math.floor(Math.random()*20), sCust: 30 + Math.floor(Math.random()*20)
-                    });
-                }
-            });
+    // IPPINデータ
+    function getIppinData(period) {
+
+        const base = period === 'monthly' ? 1 : 12;
+
+        return {
+
+            honten: {
+                sales: rand(700000, 1000000) * base,
+                plan: rand(850000, 1100000) * base,
+                gp: rand(38, 52),
+                cust: rand(100, 180) * base
+            },
+
+            kitte: {
+                sales: rand(500000, 850000) * base,
+                plan: rand(650000, 900000) * base,
+                gp: rand(35, 48),
+                cust: rand(80, 140) * base
+            },
+
+            sanno: {
+                sales: rand(300000, 550000) * base,
+                plan: rand(380000, 650000) * base,
+                gp: rand(30, 45),
+                cust: rand(120, 240) * base
+            }
         };
+    }
 
-        function initChart() {
-            const ctx = document.getElementById('summaryChart').getContext('2d');
-            Chart.defaults.font.size = 16;
-            Chart.defaults.font.weight = 'bold';
-            state.chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [
-                        { label: '展望台売上', data: [], borderColor: '#6366f1', borderWidth: 4, pointRadius: 5 },
-                        { label: '物産館合計', data: [], borderColor: '#10b981', borderWidth: 4, pointRadius: 5 }
-                    ]
+    // 元の横棒グラフ
+    function renderIppinChart(ctx, d) {
+
+        return new Chart(ctx, {
+
+            type: 'bar',
+
+            data: {
+
+                labels: [
+                    '本店',
+                    'KITTE大阪',
+                    '広島城三の丸'
+                ],
+
+                datasets: [{
+                    label: '売上高',
+
+                    data: [
+                        d.honten.sales,
+                        d.kitte.sales,
+                        d.sanno.sales
+                    ],
+
+                    backgroundColor: [
+                        C_HONTEN,
+                        C_KITTE,
+                        C_SANNO
+                    ],
+
+                    borderRadius: 6,
+                    barThickness: 40
+                }]
+            },
+
+            options: {
+
+                indexAxis: 'y',
+
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: {
+                        display: false
+                    }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { 
-                        y: { ticks: { callback: v => v + '万' } }
+
+                scales: {
+
+                    x: {
+                        grid: {
+                            color: '#f3f4f6'
+                        },
+
+                        ticks: {
+                            callback: v =>
+                                '¥' + v.toLocaleString()
+                        }
+                    },
+
+                    y: {
+                        grid: {
+                            display: false
+                        },
+
+                        ticks: {
+                            font: {
+                                family: "'Shippori Mincho', serif",
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
                     }
                 }
-            });
-        }
-
-        function refreshDashboard() {
-            const last7 = state.obsHistory.filter(h => h.date.startsWith("2026-05")).slice(-7);
-            const last7S = state.shopHistory.filter(h => h.date.startsWith("2026-05")).slice(-7);
-            state.chart.data.labels = last7.map(h => h.date.substring(5));
-            state.chart.data.datasets[0].data = last7.map(h => h.actualSales/10000);
-            state.chart.data.datasets[1].data = last7S.map(h => (h.hSales + h.oSales + h.sSales)/10000);
-            state.chart.update();
-        }
-
-        function saveData(type) {
-            alert("実績データを保存しました。");
-            refreshDashboard();
-        }
-
-        function openHistory(type) {
-            state.type = type;
-            const modal = document.getElementById('history-modal');
-            document.getElementById('modal-title').textContent = type === 'obs' ? '展望台 詳細実績一覧' : '物産館 詳細実績一覧';
-            document.getElementById('modal-icon').textContent = type === 'obs' ? '🔭' : '🛍️';
-            document.getElementById('filter-month').value = "2026-05";
-            
-            renderHistoryTable();
-
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.add('opacity-100'), 10);
-        }
-
-        function getFilteredData() {
-            const selectedMonth = document.getElementById('filter-month').value;
-            const rawData = state.type === 'obs' ? state.obsHistory : state.shopHistory;
-            return rawData
-                .filter(h => h.date.startsWith(selectedMonth))
-                .sort((a, b) => a.date.localeCompare(b.date));
-        }
-
-        function renderHistoryTable() {
-            const table = document.getElementById('history-table');
-            const data = getFilteredData();
-            table.innerHTML = '';
-            
-            if(state.type === 'obs') {
-                table.innerHTML = `
-                    <thead class="bg-slate-50 text-slate-700">
-                        <tr>
-                            <th class="p-4 border-b">日付</th>
-                            <th class="p-4 border-b">売上計画</th>
-                            <th class="p-4 border-b">売上実績</th>
-                            <th class="p-4 border-b text-indigo-600">売上達成率</th>
-                            <th class="p-4 border-b">入場計画</th>
-                            <th class="p-4 border-b">入場実績</th>
-                            <th class="p-4 border-b text-indigo-600">入場達成率</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        ${data.map(h => `
-                            <tr class="hover:bg-slate-50">
-                                <td class="p-4 font-bold text-slate-600">${h.date}</td>
-                                <td class="p-4">¥${h.planSales.toLocaleString()}</td>
-                                <td class="p-4 font-bold">¥${h.actualSales.toLocaleString()}</td>
-                                <td class="p-4 font-black ${h.salesRate >= 100 ? 'text-emerald-600' : 'text-orange-600'}">${h.salesRate}%</td>
-                                <td class="p-4">${h.planAdm.toLocaleString()}名</td>
-                                <td class="p-4 font-bold">${h.actualAdm.toLocaleString()}名</td>
-                                <td class="p-4 font-black ${h.admRate >= 100 ? 'text-emerald-600' : 'text-orange-600'}">${h.admRate}%</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-            } else {
-                table.innerHTML = `
-                    <thead class="bg-slate-50 text-slate-700 text-xs">
-                        <tr>
-                            <th class="p-4 border-b text-sm" rowspan="2">日付</th>
-                            <th class="p-2 border-b border-l bg-emerald-50 text-emerald-800 text-center" colspan="3">本店</th>
-                            <th class="p-2 border-b border-l bg-blue-50 text-blue-800 text-center" colspan="3">大阪</th>
-                            <th class="p-2 border-b border-l bg-orange-50 text-orange-800 text-center" colspan="3">三の丸</th>
-                            <th class="p-2 border-b border-l bg-slate-200 text-slate-900 text-center" colspan="2">合計</th>
-                        </tr>
-                        <tr>
-                            <th class="p-2 border-b border-l bg-emerald-50 text-center">売上</th>
-                            <th class="p-2 border-b bg-emerald-50 text-center">点数</th>
-                            <th class="p-2 border-b bg-emerald-50 text-center">客数</th>
-                            <th class="p-2 border-b border-l bg-blue-50 text-center">売上</th>
-                            <th class="p-2 border-b bg-blue-50 text-center">点数</th>
-                            <th class="p-2 border-b bg-blue-50 text-center">客数</th>
-                            <th class="p-2 border-b border-l bg-orange-50 text-center">売上</th>
-                            <th class="p-2 border-b bg-orange-50 text-center">点数</th>
-                            <th class="p-2 border-b bg-orange-50 text-center">客数</th>
-                            <th class="p-2 border-b border-l bg-slate-100 text-center">合計売上</th>
-                            <th class="p-2 border-b bg-slate-100 text-center">客単価</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y text-sm">
-                        ${data.map(h => {
-                            const totalSales = h.hSales + h.oSales + h.sSales;
-                            const totalCust = h.hCust + h.oCust + h.sCust;
-                            const unitPrice = totalCust > 0 ? Math.floor(totalSales / totalCust) : 0;
-                            return `
-                                <tr class="hover:bg-slate-50">
-                                    <td class="p-3 font-bold text-slate-600 border-r">${h.date.substring(5)}</td>
-                                    <td class="p-2 text-right">¥${Math.floor(h.hSales).toLocaleString()}</td>
-                                    <td class="p-2 text-right">${h.hItems}</td>
-                                    <td class="p-2 text-right border-r">${h.hCust}</td>
-                                    <td class="p-2 text-right">¥${Math.floor(h.oSales).toLocaleString()}</td>
-                                    <td class="p-2 text-right">${h.oItems}</td>
-                                    <td class="p-2 text-right border-r">${h.oCust}</td>
-                                    <td class="p-2 text-right">¥${Math.floor(h.sSales).toLocaleString()}</td>
-                                    <td class="p-2 text-right">${h.sItems}</td>
-                                    <td class="p-2 text-right border-r">${h.sCust}</td>
-                                    <td class="p-2 text-right font-bold bg-slate-50">¥${Math.floor(totalSales).toLocaleString()}</td>
-                                    <td class="p-2 text-right font-black text-emerald-600 bg-slate-50">¥${unitPrice.toLocaleString()}</td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                `;
             }
-            
-            if (data.length === 0) {
-                table.innerHTML = '<tbody><tr><td colspan="12" class="p-12 text-center text-slate-400 font-bold">該当月のデータがありません</td></tr></tbody>';
-            }
+        });
+    }
+
+    // ダッシュボード更新
+    function updateDashboard(period) {
+
+        currentPeriod = period;
+
+        document.querySelectorAll('.period-btn').forEach(b => {
+
+            b.classList.remove(
+                'active',
+                'text-white',
+                'bg-[#8B5E3C]'
+            );
+
+            b.classList.add('text-[#8B5E3C]');
+        });
+
+        const btn =
+            document.getElementById('btn-' + period);
+
+        if (btn) {
+
+            btn.classList.add(
+                'active',
+                'text-white',
+                'bg-[#8B5E3C]'
+            );
+
+            btn.classList.remove('text-[#8B5E3C]');
         }
 
-        function closeModal() {
-            const modal = document.getElementById('history-modal');
-            modal.classList.remove('opacity-100');
-            setTimeout(() => modal.classList.add('hidden'), 300);
+        const obsD = getObsData(period);
+        const ippinD = getIppinData(period);
+
+        // 日付表示
+        const targetDate =
+            document.getElementById('target-date').value;
+
+        document.getElementById('current-date-display').textContent =
+            targetDate;
+
+        // 展望台
+        document.getElementById('obs-total-sales').textContent =
+            fmtYen(obsD.sales);
+
+        document.getElementById('obs-sales-target').textContent =
+            fmtYen(obsD.salesPlan);
+
+        const salesRate =
+            (obsD.sales / obsD.salesPlan) * 100;
+
+        document.getElementById('obs-sales-rate').textContent =
+            salesRate.toFixed(1) + '%';
+
+        document.getElementById('obs-sales-bar').style.width =
+            Math.min(salesRate, 100) + '%';
+
+        document.getElementById('obs-total-visitors').innerHTML =
+            fmtNum(obsD.visitors) +
+            '<span class="text-xl text-gray-500 ml-1">名</span>';
+
+        document.getElementById('obs-visitors-target').innerHTML =
+            fmtNum(obsD.visitorsPlan) + '名';
+
+        const visitorsRate =
+            (obsD.visitors / obsD.visitorsPlan) * 100;
+
+        document.getElementById('obs-visitors-rate').textContent =
+            visitorsRate.toFixed(1) + '%';
+
+        document.getElementById('obs-visitors-bar').style.width =
+            Math.min(visitorsRate, 100) + '%';
+
+        // グラフ
+        if (charts['ippinCompare']) {
+            charts['ippinCompare'].destroy();
         }
 
-        function downloadCSV() {
-            const data = getFilteredData();
-            if (data.length === 0) {
-                alert("出力するデータがありません。");
-                return;
-            }
+        charts['ippinCompare'] = renderIppinChart(
+            document.getElementById('chartIppinCompare').getContext('2d'),
+            ippinD
+        );
 
-            const selectedMonth = document.getElementById('filter-month').value;
-            let csvContent = "";
-            let fileName = "";
+        // 店舗カード
+        const updateCard = (store, data) => {
 
-            if (state.type === 'obs') {
-                fileName = `展望台_実績_${selectedMonth}.csv`;
-                csvContent = "日付,売上計画,売上実績,売上達成率,入場計画,入場実績,入場達成率\n";
-                data.forEach(h => {
-                    csvContent += `${h.date},${h.planSales},${h.actualSales},${h.salesRate}%,${h.planAdm},${h.actualAdm},${h.admRate}%\n`;
-                });
-            } else {
-                fileName = `物産館_拠点別実績_${selectedMonth}.csv`;
-                csvContent = "日付,本店_売上,本店_点数,本店_客数,大阪_売上,大阪_点数,大阪_客数,三の丸_売上,三の丸_点数,三の丸_客数,合計売上,客単価\n";
-                data.forEach(h => {
-                    const totalSales = Math.floor(h.hSales + h.oSales + h.sSales);
-                    const totalCust = h.hCust + h.oCust + h.sCust;
-                    const unitPrice = totalCust > 0 ? Math.floor(totalSales / totalCust) : 0;
-                    csvContent += `${h.date},${Math.floor(h.hSales)},${h.hItems},${h.hCust},${Math.floor(h.oSales)},${h.oItems},${h.oCust},${Math.floor(h.sSales)},${h.sItems},${h.sCust},${totalSales},${unitPrice}\n`;
-                });
-            }
+            const avg =
+                Math.round(data.sales / data.cust);
 
-            // UTF-8 with BOM for Excel compatibility
-            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-            const blob = new Blob([bom, csvContent], { type: "text/csv;charset=utf-8;" });
-            
-            // Generate download link
-            const link = document.createElement("a");
-            if (link.download !== undefined) {
-                const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", fileName);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        }
+            const rate =
+                (data.sales / data.plan) * 100;
 
-        window.onload = () => {
-            initData();
-            document.getElementById('obs-date').value = "2026-05-14";
-            document.getElementById('shop-date').value = "2026-05-14";
-            initChart();
-            refreshDashboard();
+            document.getElementById(`ippin-${store}-sales`).textContent =
+                fmtYen(data.sales);
+
+            document.getElementById(`ippin-${store}-plan`).textContent =
+                fmtYen(data.plan);
+
+            document.getElementById(`ippin-${store}-rate`).textContent =
+                rate.toFixed(1) + '%';
+
+            document.getElementById(`ippin-${store}-gp`).textContent =
+                data.gp + '%';
+
+            document.getElementById(`ippin-${store}-cust`).textContent =
+                fmtNum(data.cust);
+
+            document.getElementById(`ippin-${store}-avg`).textContent =
+                fmtYen(avg);
         };
-    </script>
+
+        updateCard('honten', ippinD.honten);
+        updateCard('kitte', ippinD.kitte);
+        updateCard('sanno', ippinD.sanno);
+    }
+
+    // 日付変更時
+    function refreshDashboard() {
+        updateDashboard(currentPeriod);
+    }
+
+    // 初期表示
+    window.addEventListener('load', () => {
+        updateDashboard('monthly');
+    });
+
+</script>
+
 </body>
 </html>
