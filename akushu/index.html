@@ -1,1 +1,576 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AKUSHU CAFE | Executive Dashboard</title>
 
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', 'Shippori Mincho', serif;
+            background-color: #fcfbf9;
+            color: #4a4a4a;
+        }
+
+        .card-header-org { background-color: #5e6c4b; }
+        .card-header-res { background-color: #b45309; }
+
+        .glass-panel {
+            background: rgba(255,255,255,0.95);
+            border: 1px solid rgba(139,94,60,0.15);
+            box-shadow: 0 4px 15px -1px rgba(139,94,60,0.05);
+            backdrop-filter: blur(8px);
+        }
+
+        .font-jp {
+            font-family: 'Shippori Mincho', serif;
+        }
+
+        .period-btn {
+            transition: all 0.3s ease;
+        }
+
+        .period-btn.active {
+            background-color: #57534e;
+            color: white;
+        }
+
+        .period-btn:not(.active):hover {
+            background-color: #e7e5e4;
+            color: #57534e;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .yoy-badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .yoy-up {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .yoy-down {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .store-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border: 1px solid #f3f4f6;
+        }
+
+        .store-header {
+            padding: 16px 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .plan-box {
+            background: #fafaf9;
+            border: 1px solid #e7e5e4;
+            border-radius: 10px;
+            padding: 12px;
+        }
+    </style>
+</head>
+
+<body class="bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] flex flex-col min-h-screen">
+
+<header class="bg-white/80 backdrop-blur-md border-b border-stone-200 sticky top-0 z-50">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="flex justify-between h-20 items-center">
+
+            <div class="flex items-center gap-3">
+
+                <div class="w-10 h-10 bg-stone-700 rounded-lg flex items-center justify-center text-white shadow-md font-jp font-bold text-2xl">
+                    A
+                </div>
+
+                <div>
+                    <h1 class="text-2xl font-jp font-bold tracking-widest text-stone-700">
+                        握手カフェ
+                    </h1>
+
+                    <p class="text-[10px] text-stone-500 uppercase tracking-widest font-sans">
+                        Sales Performance
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="flex items-center gap-4">
+
+                <!-- 月次 / 年次 -->
+                <div class="flex bg-[#f5f5f4] p-1 rounded-lg border border-stone-200">
+
+                    <button onclick="updateDashboard('monthly')"
+                            id="btn-monthly"
+                            class="period-btn active px-6 py-1.5 text-xs font-bold rounded-md">
+                        月次
+                    </button>
+
+                    <button onclick="updateDashboard('yearly')"
+                            id="btn-yearly"
+                            class="period-btn px-6 py-1.5 text-xs font-bold rounded-md text-stone-600">
+                        年次
+                    </button>
+
+                </div>
+
+                <!-- 日付 -->
+                <input type="date"
+                       id="date-picker"
+                       class="border border-stone-300 rounded-lg px-3 py-2 text-sm"
+                       onchange="refreshCurrentPeriod()">
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 flex-grow">
+
+    <!-- TOTAL -->
+    <section class="fade-in">
+
+        <div class="flex items-center justify-between mb-4">
+
+            <div class="flex items-center gap-2">
+                <span class="w-1 h-6 bg-stone-600"></span>
+
+                <h2 class="text-xl font-jp font-bold text-stone-700">
+                    店舗合計
+                </h2>
+            </div>
+
+            <div id="display-period"
+                 class="text-sm text-gray-500 font-bold">
+                2026年5月 月次
+            </div>
+
+        </div>
+
+        <div class="glass-panel p-6 rounded-xl border-t-4 border-stone-500">
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+
+                <div>
+                    <div class="text-xs text-gray-500 font-bold uppercase mb-2">
+                        合計売上
+                    </div>
+
+                    <div class="text-4xl font-bold text-gray-800 font-sans tracking-tight mb-2"
+                         id="total-sales">
+                        ¥0
+                    </div>
+
+                    <div id="total-sales-yoy" class="flex justify-center"></div>
+                </div>
+
+                <div class="plan-box">
+
+                    <div class="text-xs text-gray-500 font-bold uppercase mb-2">
+                        計画値
+                    </div>
+
+                    <div class="text-2xl font-bold text-stone-700"
+                         id="total-plan">
+                        ¥0
+                    </div>
+
+                </div>
+
+                <div class="plan-box">
+
+                    <div class="text-xs text-gray-500 font-bold uppercase mb-2">
+                        計画達成率
+                    </div>
+
+                    <div class="text-2xl font-bold text-emerald-600"
+                         id="total-rate">
+                        0%
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- STORE -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- OTEMACHI -->
+        <div class="store-card">
+
+            <div class="store-header card-header-org">
+                <h3 class="text-xl font-jp font-bold">握手大手町</h3>
+                <span class="text-xs opacity-75">OTEMACHI</span>
+            </div>
+
+            <div class="p-8 text-center">
+
+                <div class="text-xs text-gray-400 mb-1">売上</div>
+
+                <div class="text-5xl font-bold text-gray-800 mb-2"
+                     id="org-sales">
+                    ¥0
+                </div>
+
+                <div id="org-sales-yoy"
+                     class="flex justify-center mb-6"></div>
+
+                <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+
+                    <div class="plan-box">
+
+                        <div class="text-xs text-gray-500 mb-1">
+                            計画値
+                        </div>
+
+                        <div class="text-xl font-bold text-stone-700"
+                             id="org-plan">
+                            ¥0
+                        </div>
+
+                    </div>
+
+                    <div class="plan-box">
+
+                        <div class="text-xs text-gray-500 mb-1">
+                            達成率
+                        </div>
+
+                        <div class="text-xl font-bold text-emerald-600"
+                             id="org-rate">
+                            0%
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- RESTAURANT -->
+        <div class="store-card">
+
+            <div class="store-header card-header-res">
+                <h3 class="text-xl font-jp font-bold">握手レストラン</h3>
+                <span class="text-xs opacity-75">RESTAURANT</span>
+            </div>
+
+            <div class="p-8 text-center">
+
+                <div class="text-xs text-gray-400 mb-1">売上</div>
+
+                <div class="text-5xl font-bold text-gray-800 mb-2"
+                     id="res-sales">
+                    ¥0
+                </div>
+
+                <div id="res-sales-yoy"
+                     class="flex justify-center mb-6"></div>
+
+                <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+
+                    <div class="plan-box">
+
+                        <div class="text-xs text-gray-500 mb-1">
+                            計画値
+                        </div>
+
+                        <div class="text-xl font-bold text-stone-700"
+                             id="res-plan">
+                            ¥0
+                        </div>
+
+                    </div>
+
+                    <div class="plan-box">
+
+                        <div class="text-xs text-gray-500 mb-1">
+                            達成率
+                        </div>
+
+                        <div class="text-xl font-bold text-emerald-600"
+                             id="res-rate">
+                            0%
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<script>
+
+    let currentPeriod = 'monthly';
+
+    // =========================
+    // FORMAT
+    // =========================
+
+    const fmtYen = num =>
+        '¥' + Math.round(num).toLocaleString();
+
+    // =========================
+    // ランダム生成
+    // =========================
+
+    function randomRange(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // =========================
+    // データ生成
+    // =========================
+
+    function getData(period) {
+
+        const yearly = period === 'yearly';
+
+        const otePlan =
+            yearly
+                ? randomRange(18000000, 25000000)
+                : randomRange(150000, 250000);
+
+        const resPlan =
+            yearly
+                ? randomRange(35000000, 50000000)
+                : randomRange(300000, 450000);
+
+        const oteSales =
+            otePlan * (0.75 + Math.random() * 0.35);
+
+        const resSales =
+            resPlan * (0.75 + Math.random() * 0.35);
+
+        const oteLast =
+            oteSales * (0.85 + Math.random() * 0.3);
+
+        const resLast =
+            resSales * (0.85 + Math.random() * 0.3);
+
+        return {
+
+            otemachi: {
+                sales: oteSales,
+                plan: otePlan,
+                last: oteLast
+            },
+
+            restaurant: {
+                sales: resSales,
+                plan: resPlan,
+                last: resLast
+            }
+
+        };
+    }
+
+    // =========================
+    // 前年比
+    // =========================
+
+    function renderYoYBadge(elId, current, last) {
+
+        const el = document.getElementById(elId);
+
+        const ratio = (current / last) * 100;
+
+        const isUp = ratio >= 100;
+
+        const badgeClass =
+            isUp ? 'yoy-up' : 'yoy-down';
+
+        const icon =
+            isUp ? '▲' : '▼';
+
+        const label =
+            currentPeriod === 'monthly'
+                ? '前年同月比'
+                : '前年同期比';
+
+        el.innerHTML = `
+            <span class="yoy-badge ${badgeClass}">
+                ${label} ${icon} ${Math.round(ratio)}%
+            </span>
+        `;
+    }
+
+    // =========================
+    // 更新
+    // =========================
+
+    function updateDashboard(period) {
+
+        currentPeriod = period;
+
+        // ボタン切替
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.classList.remove('active', 'text-white');
+            btn.classList.add('text-stone-600');
+        });
+
+        const activeBtn =
+            document.getElementById('btn-' + period);
+
+        activeBtn.classList.add('active', 'text-white');
+        activeBtn.classList.remove('text-stone-600');
+
+        const d = getData(period);
+
+        const ote = d.otemachi;
+        const res = d.restaurant;
+
+        // 日付
+        const dateInput =
+            document.getElementById('date-picker');
+
+        const date =
+            new Date(dateInput.value || new Date());
+
+        const displayText =
+            period === 'monthly'
+                ? `${date.getFullYear()}年${date.getMonth()+1}月 月次`
+                : `${date.getFullYear()}年 年次`;
+
+        document.getElementById('display-period')
+            .textContent = displayText;
+
+        // TOTAL
+        const totalSales =
+            ote.sales + res.sales;
+
+        const totalPlan =
+            ote.plan + res.plan;
+
+        const totalLast =
+            ote.last + res.last;
+
+        const totalRate =
+            (totalSales / totalPlan) * 100;
+
+        document.getElementById('total-sales')
+            .textContent = fmtYen(totalSales);
+
+        document.getElementById('total-plan')
+            .textContent = fmtYen(totalPlan);
+
+        document.getElementById('total-rate')
+            .textContent = totalRate.toFixed(1) + '%';
+
+        renderYoYBadge(
+            'total-sales-yoy',
+            totalSales,
+            totalLast
+        );
+
+        // OTEMACHI
+        const oteRate =
+            (ote.sales / ote.plan) * 100;
+
+        document.getElementById('org-sales')
+            .textContent = fmtYen(ote.sales);
+
+        document.getElementById('org-plan')
+            .textContent = fmtYen(ote.plan);
+
+        document.getElementById('org-rate')
+            .textContent = oteRate.toFixed(1) + '%';
+
+        renderYoYBadge(
+            'org-sales-yoy',
+            ote.sales,
+            ote.last
+        );
+
+        // RESTAURANT
+        const resRate =
+            (res.sales / res.plan) * 100;
+
+        document.getElementById('res-sales')
+            .textContent = fmtYen(res.sales);
+
+        document.getElementById('res-plan')
+            .textContent = fmtYen(res.plan);
+
+        document.getElementById('res-rate')
+            .textContent = resRate.toFixed(1) + '%';
+
+        renderYoYBadge(
+            'res-sales-yoy',
+            res.sales,
+            res.last
+        );
+    }
+
+    // 日付変更時
+    function refreshCurrentPeriod() {
+        updateDashboard(currentPeriod);
+    }
+
+    // 初期化
+    window.addEventListener('load', () => {
+
+        const today = new Date();
+
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+
+        document.getElementById('date-picker').value =
+            `${yyyy}-${mm}-${dd}`;
+
+        updateDashboard('monthly');
+    });
+
+</script>
+
+</body>
+</html>
