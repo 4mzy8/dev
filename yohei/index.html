@@ -1,1 +1,1295 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AKUSHU CAFE | Executive Dashboard</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+
+        body {
+            font-family: 'Inter', 'Shippori Mincho', serif;
+            background-color: #fcfbf9;
+            color: #4a4a4a;
+        }
+
+        .card-header-org {
+            background-color: #5e6c4b;
+        }
+
+        .card-header-res {
+            background-color: #b45309;
+        }
+
+        .glass-panel {
+            background: rgba(255,255,255,0.95);
+            border: 1px solid rgba(139,94,60,0.15);
+            box-shadow: 0 4px 15px -1px rgba(139,94,60,0.05);
+            backdrop-filter: blur(8px);
+        }
+
+        .font-jp {
+            font-family: 'Shippori Mincho', serif;
+        }
+
+        .period-btn {
+            transition: all 0.3s ease;
+        }
+
+        .period-btn.active {
+            background-color: #57534e;
+            color: white;
+        }
+
+        .period-btn:not(.active):hover {
+            background-color: #e7e5e4;
+            color: #57534e;
+        }
+
+        .store-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08);
+            border: 1px solid #f3f4f6;
+        }
+
+        .store-header {
+            padding: 16px 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .plan-box {
+            background: #fafaf9;
+            border: 1px solid #e7e5e4;
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .progress-wrap {
+            width: 100%;
+            height: 18px;
+            background: #e7e5e4;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width .5s ease;
+        }
+
+        .progress-green {
+            background: linear-gradient(to right, #10b981, #34d399);
+        }
+
+        .progress-orange {
+            background: linear-gradient(to right, #f59e0b, #fbbf24);
+        }
+
+        .progress-blue {
+            background: linear-gradient(to right, #3b82f6, #60a5fa);
+        }
+
+        .chart-area {
+            height: 180px;
+        }
+
+        .yoy-label {
+            font-size: 14px;
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            display: inline-block;
+        }
+
+        .yoy-up {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .yoy-down {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+.period-display {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+}
+
+.notice-text {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #d6d3d1;
+    color: #78716c;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.rate-good {
+    color: #16a34a !important;
+}
+
+.rate-bad {
+    color: #dc2626 !important;
+}
+
+    </style>
+
+</head>
+
+<body class="bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] flex flex-col min-h-screen">
+
+<header class="bg-white/80 backdrop-blur-md border-b border-stone-200 sticky top-0 z-50">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="flex justify-between h-20 items-center">
+
+            <div class="flex items-center gap-3">
+
+                <div class="w-10 h-10 bg-stone-700 rounded-lg flex items-center justify-center text-white shadow-md font-jp font-bold text-2xl">
+                    A
+                </div>
+
+                <div>
+
+                    <h1 class="text-2xl font-jp font-bold tracking-widest text-stone-700">
+                        Yohei Sushi
+                    </h1>
+
+                    <p class="text-[10px] text-stone-500 uppercase tracking-widest font-sans">
+                        Sales Performance Dashboard
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="flex items-center gap-4">
+
+                <div class="flex bg-[#f5f5f4] p-1 rounded-lg border border-stone-200">
+
+                    <button onclick="updateDashboard('monthly')"
+                            id="btn-monthly"
+                            class="period-btn active px-6 py-1.5 text-xs font-bold rounded-md">
+                        月次
+                    </button>
+
+                    <button onclick="updateDashboard('yearly')"
+                            id="btn-yearly"
+                            class="period-btn px-6 py-1.5 text-xs font-bold rounded-md text-stone-600">
+                        年次
+                    </button>
+
+                </div>
+
+                <input type="date"
+                       id="date-picker"
+                       class="border border-stone-300 rounded-lg px-3 py-2 text-sm"
+                       onchange="refreshCurrentPeriod()">
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 flex-grow">
+
+<!-- 表示期間 -->
+<div class="period-display rounded-xl p-4">
+
+    <div class="text-sm font-bold text-stone-700 mb-2">
+        表示期間
+    </div>
+
+    <div id="display-period"
+         class="text-gray-700 text-sm font-medium">
+    </div>
+
+    <div id="period-notice"
+         class="notice-text">
+    </div>
+
+</div>
+
+    <!-- TOTAL -->
+    <section>
+
+        <div class="flex items-center justify-between mb-4">
+
+            <div class="flex items-center gap-2">
+
+                <span class="w-1 h-6 bg-stone-600"></span>
+
+                <h2 class="text-xl font-jp font-bold text-stone-700">
+                    店舗合計
+                </h2>
+
+            </div>
+
+            <div class="text-xs text-stone-500">
+
+                実績反映日：
+                <span id="last-update"></span>
+
+            </div>
+
+        </div>
+
+        <div class="glass-panel p-8 rounded-xl border-t-4 border-stone-500">
+
+            <div class="text-center mb-8">
+
+                <button
+                    id="trendButton"
+                    onclick="openTrendModal('total')"
+                    class="absolute right-4 top-4 bg-stone-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-stone-800">
+
+                    日別推移
+
+                </button>
+
+                <div class="text-xs text-gray-500 font-bold uppercase mb-2">
+                    合計売上（税別）
+                </div>
+
+                <div class="text-5xl font-bold text-gray-800 tracking-tight mb-3"
+                     id="total-sales">
+                    $0
+                </div>
+
+                <div id="total-sales-yoy"
+                     class="flex justify-center">
+                </div>
+
+            </div>
+
+            <div class="plan-box max-w-3xl mx-auto">
+
+                <div class="grid grid-cols-2 gap-4 text-center mb-4">
+
+                    <div>
+
+                        <div class="text-[11px] text-gray-400 mb-1">
+                            計画値（税別）
+                        </div>
+
+                        <div class="text-3xl font-bold text-stone-700"
+                             id="total-plan">
+                            $0
+                        </div>
+
+                    </div>
+
+                    <div class="border-l border-gray-200">
+
+                        <div class="text-[11px] text-gray-400 mb-1">
+                            達成率
+                        </div>
+
+                        <div class="text-3xl font-bold text-emerald-600"
+                             id="total-rate">
+                            0%
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="progress-wrap">
+
+                    <div id="total-progress"
+                         class="progress-bar progress-green"
+                         style="width:0%;">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- 横棒グラフ -->
+    <section class="glass-panel p-6 rounded-xl">
+
+        <div class="flex items-center gap-2 mb-4">
+
+            <span class="w-1 h-6 bg-stone-600"></span>
+
+            <h2 class="text-lg font-jp font-bold text-stone-700">
+                店舗別売上比較（税別）
+            </h2>
+
+        </div>
+
+        <div class="chart-area">
+            <canvas id="storeChart"></canvas>
+        </div>
+
+    </section>
+
+    <!-- STORE -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <!-- 握手大手町 -->
+        <div class="store-card">
+
+            <div class="store-header card-header-org">
+
+                <h3 class="text-xl font-jp font-bold">
+                        Kahala
+                </h3>
+
+                <span class="text-xs opacity-75">
+                    カハラ
+                </span>
+
+            </div>
+
+            <div class="p-8 relative">
+
+                <button
+                    onclick="openTrendModal('kahala')"
+                    class="absolute top-4 right-4 bg-stone-700 text-white px-3 py-1 rounded-lg text-sm hover:bg-stone-800">
+
+                    日別推移
+
+                </button></br>
+
+                <!-- 売上 -->
+                <div class="text-center mb-6 relative">
+
+                    <div class="text-xs text-gray-400 mb-1">
+                        売上（税別）
+                    </div>
+
+                    <div class="text-5xl font-bold text-gray-800 mb-2"
+                         id="org-sales">
+                        $0
+                    </div>
+
+                    <div id="org-sales-yoy"
+                         class="flex justify-center">
+                    </div>
+
+                </div>
+
+                <!-- 計画値 / 達成率 -->
+                <div class="plan-box mb-8">
+
+                    <div class="grid grid-cols-2 gap-4 text-center mb-4">
+
+                        <div>
+
+                            <div class="text-[11px] text-gray-400 mb-1">
+                                計画値（税別）
+                            </div>
+
+                            <div class="text-2xl font-bold text-stone-700"
+                                 id="org-plan">
+                                $0
+                            </div>
+
+                        </div>
+
+                        <div class="border-l border-gray-200">
+
+                            <div class="text-[11px] text-gray-400 mb-1">
+                                達成率
+                            </div>
+
+                            <div class="text-2xl font-bold text-emerald-600"
+                                 id="org-rate">
+                                0%
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="progress-wrap">
+
+                        <div id="org-progress"
+                             class="progress-bar progress-blue"
+                             style="width:0%;">
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- RESTAURANT -->
+
+        <div class="store-card">
+
+            <div class="store-header card-header-res">
+
+                <h3 class="text-xl font-jp font-bold">
+                    Dillingham
+                </h3>
+
+                <span class="text-xs opacity-75">
+                    デリンハム
+                </span>
+
+            </div>
+
+            <div class="p-8 relative">
+
+                <button
+                    onclick="openTrendModal('kahala')"
+                    class="absolute top-4 right-4 bg-stone-700 text-white px-3 py-1 rounded-lg text-sm hover:bg-stone-800">
+
+                    日別推移
+
+                </button></br>
+
+                <div class="text-center mb-6 relative">
+
+                    <div class="text-xs text-gray-400 mb-1">
+                        売上（税別）
+                    </div>
+
+                    <div class="text-5xl font-bold text-gray-800 mb-2"
+                         id="res-sales">
+                        $0
+                    </div>
+
+                    <div id="res-sales-yoy"
+                         class="flex justify-center">
+                    </div>
+
+                </div>
+
+                <div class="plan-box">
+
+                    <div class="grid grid-cols-2 gap-4 text-center mb-4">
+
+                        <div>
+
+                            <div class="text-[11px] text-gray-400 mb-1">
+                                計画値（税別）
+                            </div>
+
+                            <div class="text-2xl font-bold text-stone-700"
+                                 id="res-plan">
+                                $0
+                            </div>
+
+                        </div>
+
+                        <div class="border-l border-gray-200">
+
+                            <div class="text-[11px] text-gray-400 mb-1">
+                                達成率
+                            </div>
+
+                            <div class="text-2xl font-bold text-emerald-600"
+                                 id="res-rate">
+                                0%
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="progress-wrap">
+
+                        <div id="res-progress"
+                             class="progress-bar progress-orange"
+                             style="width:0%;">
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <div id="trendModal"
+        class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+
+        <div class="bg-white rounded-xl shadow-xl w-[95%] max-w-6xl overflow-hidden">
+
+
+            <!-- ヘッダー -->
+            <div class="bg-blue-600 text-white px-5 py-4 flex justify-between items-center">
+
+                <h2 id="trendTitle"
+                    class="text-xl font-bold">
+                    売上推移
+                </h2>
+
+
+                <button
+                    onclick="closeTrendModal()"
+                    class="text-3xl leading-none text-blue-200 hover:text-white">
+
+                    ×
+
+                </button>
+
+            </div>
+
+            <!-- 売上累計 -->
+            <div class="p-6">
+
+                <div class="bg-white rounded-xl shadow-md border border-gray-100 p-8 text-center">
+
+                    <div class="text-sm text-gray-500 mb-2">
+                        売上累計（税別）
+                    </div>
+
+
+                    <div id="trendTotalSales"
+                         class="text-5xl font-bold text-gray-900">
+
+                        ¥0
+
+                    </div>
+
+
+                </div>
+
+                <!-- グラフ -->
+                <div class="mt-8"
+                     style="height:450px">
+
+                    <canvas id="trendChart"></canvas>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+<script>
+
+    Chart.defaults.font.family =
+        "'Inter', 'Shippori Mincho', sans-serif";
+
+    let currentPeriod = 'monthly';
+    let storeChart = null;
+    let trendChart = null;
+
+    // 店舗合計売上保持用
+    let currentTotalSales = 0;
+    let currentTrendTitle = '';
+
+    const fmtDollar = num =>
+
+        new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            maximumFractionDigits: 0
+        }).format(num);
+
+    function randomRange(min, max) {
+
+        return Math.floor(
+            Math.random() * (max - min + 1)
+        ) + min;
+
+    }
+
+    function getData(period) {
+
+        const yearly = period === 'yearly';
+
+        const cafeSales =
+            yearly ? randomRange(3000000, 5000000)
+                   : randomRange(30000, 50000);
+
+        const rtbSales =
+            yearly ? randomRange(2000000, 4000000)
+                   : randomRange(20000, 40000);
+
+        const partyPlan =
+            yearly ? randomRange(5000000, 7000000)
+                   : randomRange(50000, 70000);
+
+const partySales =
+     Math.round(
+        partyPlan * (0.6 + Math.random() * 0.7)
+     );
+
+        const epiclePlan =
+            yearly ? randomRange(4000000, 6000000)
+                   : randomRange(40000, 60000);
+
+const epicleSales =
+     Math.round(
+        epiclePlan * (0.6 + Math.random() * 0.7)
+    );
+
+        const otherSales =
+            yearly ? randomRange(1000000, 2000000)
+                   : randomRange(10000, 20000);
+
+        const oteSales =
+            Math.round(
+                cafeSales +
+                rtbSales +
+                partySales +
+                epicleSales +
+                otherSales
+            );
+
+        const otePlan =
+            partyPlan + epiclePlan;
+
+        const resPlan =
+            yearly ? randomRange(35000000, 50000000)
+                   : randomRange(300000, 450000);
+
+const resSales =
+    Math.round(
+        resPlan * (0.6 + Math.random() * 0.7)
+    );
+
+        return {
+
+            otemachi: {
+
+                sales: oteSales,
+                plan: otePlan,
+                last: oteSales * (0.85 + Math.random() * 0.3),
+
+                breakdown: {
+
+                    cafe: {
+                        sales: cafeSales
+                    },
+
+                    rtb: {
+                        sales: rtbSales
+                    },
+
+                    party: {
+                        sales: partySales,
+                        plan: partyPlan
+                    },
+
+                    epicle: {
+                        sales: epicleSales,
+                        plan: epiclePlan
+                    },
+
+                    other: {
+                        sales: otherSales
+                    }
+
+                }
+
+            },
+
+            restaurant: {
+                sales: resSales,
+                plan: resPlan,
+                last: resSales * (0.85 + Math.random() * 0.3)
+            }
+
+        };
+
+    }
+
+    function renderYoYBadge(elId, current, last) {
+
+        const ratio = (current / last) * 100;
+
+        const className =
+            ratio >= 100
+                ? 'yoy-up'
+                : 'yoy-down';
+
+        const label =
+            currentPeriod === 'monthly'
+                ? '前年同月比'
+                : '前年同期比';
+
+        document.getElementById(elId).innerHTML = `
+            <span class="yoy-label ${className}">
+                ${label} ${ratio.toFixed(1)}%
+            </span>
+        `;
+
+    }
+
+    function updateProgress(id, rate) {
+
+        document.getElementById(id).style.width =
+            Math.min(rate, 100) + '%';
+
+    }
+
+function updateRateColor(id, rate) {
+
+    const el = document.getElementById(id);
+
+    el.classList.remove(
+        'rate-good',
+        'rate-bad'
+    );
+
+    if (rate >= 100) {
+
+        el.classList.add('rate-good');
+
+    } else {
+
+        el.classList.add('rate-bad');
+
+    }
+
+}
+
+    function renderStoreChart(oteSales, resSales) {
+
+        const ctx =
+            document.getElementById('storeChart');
+
+        if (storeChart) {
+            storeChart.destroy();
+        }
+
+        storeChart = new Chart(ctx, {
+
+            type: 'bar',
+
+            data: {
+
+                labels: [
+                    'Kahala',
+                    'Dillingham'
+                ],
+
+                datasets: [{
+
+                    label: '',
+
+                    data: [
+                        oteSales,
+                        resSales
+                    ],
+
+                    backgroundColor: [
+                        '#5e6c4b',
+                        '#d97706'
+                    ],
+
+                    borderRadius: 8,
+                    barThickness: 30
+
+                }]
+
+            },
+
+            options: {
+
+                indexAxis: 'y',
+
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins:{
+
+                    legend:{
+                        display:false
+                    },
+
+                    tooltip:{
+
+                        callbacks:{
+
+                            label:function(context){
+
+                                return fmtDollar(context.raw);
+
+                            }
+
+                        }
+
+                    }
+
+                },
+
+                scales: {
+
+                    x: {
+
+                        beginAtZero: true,
+
+                        ticks: {
+
+                            callback: value =>
+                                fmtDollar(value)
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    }
+
+    function updateDashboard(period) {
+
+        currentPeriod = period;
+
+document.querySelectorAll('.period-btn')
+.forEach(btn => {
+    btn.classList.remove('active');
+});
+
+document.getElementById(
+    'btn-' + period
+).classList.add('active');
+
+        const d = getData(period);
+
+        const ote = d.otemachi;
+        const res = d.restaurant;
+
+const selectedDate =
+    new Date(
+        document.getElementById('date-picker').value
+    );
+
+const startDate =
+    period === 'monthly'
+    ? new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        1
+      )
+    : new Date(
+        selectedDate.getMonth() >= 9
+            ? selectedDate.getFullYear()
+            : selectedDate.getFullYear() - 1,
+        9,
+        1
+      );
+
+document.getElementById(
+    'display-period'
+).innerHTML = `
+    ${startDate.getFullYear()}年
+    ${startDate.getMonth()+1}月
+    ${startDate.getDate()}日
+    ～
+${selectedDate.getFullYear()}年
+${selectedDate.getMonth()+1}月
+${selectedDate.getDate()}日
+`;
+
+const notice =
+    period === 'monthly'
+    ? '※ 計画値は月末計画値です。達成率は月末計画に対する進捗率を表示しています。'
+    : '※ 計画値は年間計画値です。達成率は年間計画に対する進捗率を表示しています。';
+
+document.getElementById(
+    'period-notice'
+).textContent = notice;
+
+        // TOTAL
+        const totalSales =
+            ote.sales + res.sales;
+
+        currentTotalSales = totalSales;
+
+        const totalPlan =
+            ote.plan + res.plan;
+
+        const totalLast =
+            ote.last + res.last;
+
+        const totalRate =
+            (totalSales / totalPlan) * 100;
+
+        document.getElementById('total-sales').textContent =
+            fmtDollar(totalSales);
+
+        document.getElementById('total-plan').textContent =
+            fmtDollar(totalPlan);
+
+        document.getElementById('total-rate').textContent =
+            totalRate.toFixed(1) + '%';
+
+        updateProgress('total-progress', totalRate);
+
+        renderYoYBadge(
+            'total-sales-yoy',
+            totalSales,
+            totalLast
+        );
+
+updateRateColor(
+    'total-rate',
+    totalRate
+);
+
+        // OTE
+        const oteRate =
+            (ote.sales / ote.plan) * 100;
+
+        document.getElementById('org-sales').textContent =
+            fmtDollar(ote.sales);
+
+        document.getElementById('org-plan').textContent =
+            fmtDollar(ote.plan);
+
+        document.getElementById('org-rate').textContent =
+            oteRate.toFixed(1) + '%';
+
+        updateProgress('org-progress', oteRate);
+
+        renderYoYBadge(
+            'org-sales-yoy',
+            ote.sales,
+            ote.last
+        );
+
+
+updateRateColor(
+    'org-rate',
+    oteRate
+);
+
+        // RESTAURANT
+        const resRate =
+            (res.sales / res.plan) * 100;
+
+        document.getElementById('res-sales').textContent =
+            fmtDollar(res.sales);
+
+        document.getElementById('res-plan').textContent =
+            fmtDollar(res.plan);
+
+        document.getElementById('res-rate').textContent =
+            resRate.toFixed(1) + '%';
+
+        updateProgress('res-progress', resRate);
+
+        renderYoYBadge(
+            'res-sales-yoy',
+            res.sales,
+            res.last
+        );
+
+        renderStoreChart(
+            ote.sales,
+            res.sales
+        );
+
+updateRateColor(
+    'res-rate',
+    resRate
+);
+
+document.getElementById("last-update").textContent =
+    document.getElementById("date-picker").value
+        .replaceAll("-", "/");
+
+document.getElementById("trendButton").textContent =
+    currentPeriod === "monthly"
+        ? "日別推移"
+        : "月別推移";
+
+
+    }
+
+    function refreshCurrentPeriod() {
+
+        updateDashboard(currentPeriod);
+
+    }
+
+    window.addEventListener('load', () => {
+
+        const today = new Date();
+
+        const yyyy =
+            today.getFullYear();
+
+        const mm =
+            String(today.getMonth() + 1)
+            .padStart(2, '0');
+
+        const dd =
+            String(today.getDate())
+            .padStart(2, '0');
+
+        document.getElementById(
+            'date-picker'
+        ).value =
+            `${yyyy}-${mm}-${dd}`;
+
+        updateDashboard('monthly');
+
+    });
+
+    function openTrendModal(type) {
+
+        if(type === 'kahala'){
+
+            currentTrendSales = 
+                Number(
+                    document
+                    .getElementById('org-sales')
+                    .textContent
+                    .replace(/[$,]/g,'')
+                );
+
+            currentTrendTitle = "Kahala 日別売上推移";
+
+        }
+
+        if(type === 'dillingham'){
+
+            currentTrendSales =
+                Number(
+                    document
+                    .getElementById('res-sales')
+                    .textContent
+                    .replace(/[$,]/g,'')
+                );
+
+            currentTrendTitle = "Dillingham 日別売上推移";
+
+        }
+
+
+        if(type === 'total'){
+
+            currentTrendSales = currentTotalSales;
+
+            currentTrendTitle = "店舗合計 日別売上推移";
+
+        }
+
+
+        document
+            .getElementById("trendModal")
+            .classList.remove("hidden");
+
+
+        setTimeout(()=>{
+
+            renderTrendChart();
+
+        },100);
+
+    }
+
+    function closeTrendModal() {
+
+        document
+            .getElementById("trendModal")
+            .classList.add("hidden");
+
+    }
+
+    function renderTrendChart() {
+
+        const ctx =
+            document.getElementById("trendChart");
+
+        if(trendChart){
+
+            trendChart.destroy();
+
+        }
+
+        let labels=[];
+        let data=[];
+        let total = 0;
+
+        if(currentPeriod==="monthly"){
+
+            document.getElementById("trendTitle").textContent =
+                 currentTrendTitle;
+
+            let tempData = [];
+
+            // 日別仮データ作成
+            for(let i=1;i<=31;i++){
+
+                labels.push(i+"日");
+
+                tempData.push(
+                    randomRange(5000,30000)
+                );
+
+            }
+
+
+            // 仮データ合計
+            const tempTotal =
+                tempData.reduce(
+                    (a,b)=>a+b,
+                    0
+                );
+
+
+            // 店舗合計売上に合わせる
+            data =
+                tempData.map(value =>
+
+                    Math.round(
+                        value / tempTotal * currentTrendSales
+                    )
+
+                );
+
+
+        }else{
+
+            document.getElementById("trendTitle").textContent="月別売上推移";
+
+            const months=[
+                "10月","11月","12月",
+                "1月","2月","3月",
+                "4月","5月","6月",
+                "7月","8月","9月"
+            ];
+
+            labels=months;
+
+            months.forEach(()=>{
+
+                data.push(
+                    randomRange(300000,600000)
+                );
+
+            });
+
+
+            const tempTotal =
+                data.reduce(
+                    (a,b)=>a+b,
+                    0
+                );
+
+            data =
+            data.map(value =>
+
+                Math.round(
+                    value / tempTotal * currentTrendSales
+                )
+
+            );
+
+        }
+
+        document.getElementById(
+            "trendTotalSales"
+        ).textContent =
+            fmtDollar(currentTrendSales);
+
+        trendChart=new Chart(ctx,{
+
+            type:"bar",
+
+            data:{
+
+                labels:labels,
+
+                datasets:[{
+
+                    label:"売上",
+
+                    data:data,
+
+                    backgroundColor:"#6fa0e8",
+
+                    borderRadius:6
+
+                }]
+
+            },
+
+            options:{
+
+                responsive:true,
+
+                maintainAspectRatio:false,
+
+                plugins:{
+
+                    egend:{
+                        display:false
+                    },
+
+                    tooltip:{
+
+                        callbacks:{
+
+                            label:function(context){
+
+                                return fmtDollar(context.raw);
+
+                            }
+
+                        }
+
+                    }
+
+                },
+
+                scales:{
+
+                    y:{
+
+                        ticks:{
+
+                            callback:value=>fmtDollar(value)
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    }
+</script>
+
+</body>
+</html>
