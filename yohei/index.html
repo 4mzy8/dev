@@ -612,14 +612,15 @@
         new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD',
-            maximumFractionDigits: 0
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         }).format(num);
 
-    function randomRange(min, max) {
+    function randomRangeDecimal(min, max) {
 
-        return Math.floor(
-            Math.random() * (max - min + 1)
-        ) + min;
+        return Number(
+             (Math.random() * (max - min) + min).toFixed(2)
+        );
 
     }
 
@@ -628,54 +629,59 @@
         const yearly = period === 'yearly';
 
         const cafeSales =
-            yearly ? randomRange(3000000, 5000000)
-                   : randomRange(30000, 50000);
+            yearly ? randomRangeDecimal(30000, 50000)
+                   : randomRangeDecimal(300, 500);
 
         const rtbSales =
-            yearly ? randomRange(2000000, 4000000)
-                   : randomRange(20000, 40000);
+            yearly ? randomRangeDecimal(20000, 40000)
+                   : randomRangeDecimal(200, 400);
 
         const partyPlan =
-            yearly ? randomRange(5000000, 7000000)
-                   : randomRange(50000, 70000);
+            yearly ? randomRangeDecimal(50000, 70000)
+                   : randomRangeDecimal(500, 700);
 
 const partySales =
-     Math.round(
-        partyPlan * (0.6 + Math.random() * 0.7)
+     Number(
+        (partyPlan * (0.6 + Math.random() * 0.7))
+        .toFixed(2)
      );
 
         const epiclePlan =
-            yearly ? randomRange(4000000, 6000000)
-                   : randomRange(40000, 60000);
+            yearly ? randomRangeDecimal(40000, 60000)
+                   : randomRangeDecimal(400, 600);
 
 const epicleSales =
-     Math.round(
-        epiclePlan * (0.6 + Math.random() * 0.7)
+     Number(
+        (epiclePlan * (0.6 + Math.random() * 0.7))
+        .toFixed(2)
     );
 
         const otherSales =
-            yearly ? randomRange(1000000, 2000000)
-                   : randomRange(10000, 20000);
+            yearly ? randomRangeDecimal(10000, 20000)
+                   : randomRangeDecimal(100, 200);
 
         const oteSales =
-            Math.round(
-                cafeSales +
-                rtbSales +
-                partySales +
-                epicleSales +
-                otherSales
+            Number(
+                (
+                    cafeSales +
+                    rtbSales +
+                    partySales +
+                    epicleSales +
+                    otherSales
+                ).toFixed(2)
             );
 
         const otePlan =
             partyPlan + epiclePlan;
 
         const resPlan =
-            yearly ? randomRange(35000000, 50000000)
-                   : randomRange(300000, 450000);
+            yearly ? randomRangeDecimal(350000, 500000)
+                   : randomRangeDecimal(3000, 4500);
 
 const resSales =
-    Math.round(
-        resPlan * (0.6 + Math.random() * 0.7)
+    Number(
+        (resPlan * (0.6 + Math.random() * 0.7))
+        .toFixed(2)
     );
 
         return {
@@ -1151,7 +1157,7 @@ document.getElementById("trendButton").textContent =
                 labels.push(i+"日");
 
                 tempData.push(
-                    randomRange(5000,30000)
+                    randomRangeDecimal(50,300)
                 );
 
             }
@@ -1169,8 +1175,10 @@ document.getElementById("trendButton").textContent =
             data =
                 tempData.map(value =>
 
-                    Math.round(
-                        value / tempTotal * currentTrendSales
+                    Number(
+                        (
+                            value / tempTotal * currentTrendSales
+                        ).toFixed(2)
                     )
 
                 );
@@ -1192,7 +1200,7 @@ document.getElementById("trendButton").textContent =
             months.forEach(()=>{
 
                 data.push(
-                    randomRange(300000,600000)
+                    randomRangeDecimal(3000,6000)
                 );
 
             });
@@ -1207,8 +1215,10 @@ document.getElementById("trendButton").textContent =
             data =
             data.map(value =>
 
-                Math.round(
-                    value / tempTotal * currentTrendSales
+                Number(
+                    (
+                        value / tempTotal * currentTrendSales
+                    ).toFixed(2)
                 )
 
             );
