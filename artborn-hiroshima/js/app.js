@@ -12,27 +12,39 @@ Papa.parse(CSV_FILE, {
 
     skipEmptyLines: true,
 
-    complete: function(results) {
+complete: function(results) {
 
-        // 12行目から作品データ
-        works = results.data.slice(10);
+    // CSVの12行目から作品データ
+    works = results.data.slice(10);
 
-        // データ整理
-        works = works.map(work => {
+    // 列番号でデータを取得
+    works = works.map(row => {
 
-            return {
-                artist: work['作家名※氏名の間は詰めて下さい。'] || '',
-                title: work['作品名'] || '',
-                image: work['作品画像を添付してください。\n登録するための識別用なので「ラフな画像」「低解像度の画像」で構いません、正式なものは別途運営側で撮影します。\n★作品自体がデータ（写真）で存在する場合はWEBサムネ表示用として短辺500pix以上の画像を添付してください。'] || '',
-                price: work['販売税込価格\n（お客様に提示する税込価格です、運営側のマージン込みの価格を設定してください）'] || '',
-                size: work['作品サイズ\n（縦x横x奥行、例：H300 x W150 x D30ｍｍ）'] || ''
-            };
+        return {
+            artist: row[1] || '',
+            title: row[2] || '',
+            image: row[3] || '',
+            price: row[4] || '',
+            size: row[9] || '',
+            registerStatus: row[16] || '',
+            ecStatus: row[17] || ''
+        };
 
-        });
+    });
 
-        createArtistFilter();
+    // 空データを除外
+    works = works.filter(work => {
+        return work.artist || work.title;
+    });
 
-        renderWorks();
+    console.log('読み込んだ作品数:', works.length);
+    console.log(works);
+
+    createArtistFilter();
+
+    renderWorks();
+
+}
 
     }
 
