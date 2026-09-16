@@ -51,44 +51,64 @@ works = registeredRows.map(row => {
 // 同じ作品名をまとめる
 // ==============================
 
+// 作品名から末尾の丸数字を削除して
+// 同じ作品かどうか判定する
+function getTitleKey(title) {
+
+    return title
+        .replace(/[①②③④⑤⑥⑦⑧⑨⑩]+$/g, '')
+        .trim();
+
+}
+
+
+// 作品名ごとの件数をカウント
 const titleCount = {};
 
 works.forEach(work => {
 
-    if (work.title) {
+    const titleKey = getTitleKey(work.title);
 
-        titleCount[work.title] =
-            (titleCount[work.title] || 0) + 1;
-
-    }
+    titleCount[titleKey] =
+        (titleCount[titleKey] || 0) + 1;
 
 });
 
 
 // 同じ作品名は1件だけ表示
-works = works.filter((work, index, array) => {
+const displayedTitles = new Set();
 
-    return array.findIndex(item =>
-        item.title === work.title
-    ) === index;
+works = works.filter(work => {
+
+    const titleKey = getTitleKey(work.title);
+
+    if (displayedTitles.has(titleKey)) {
+        return false;
+    }
+
+    displayedTitles.add(titleKey);
+
+    return true;
 
 });
 
 
-// 「他XX作品」の表示情報を追加
+// 表示用の作品名を設定
 works.forEach(work => {
 
-    const count = titleCount[work.title] || 1;
+    const titleKey = getTitleKey(work.title);
+
+    const count = titleCount[titleKey] || 1;
 
     if (count > 1) {
 
         work.titleDisplay =
-            `${work.title}　他${count - 1}作品`;
+            `${titleKey}　他${count - 1}作品`;
 
     } else {
 
         work.titleDisplay =
-            work.title;
+            titleKey;
 
     }
 
