@@ -30,17 +30,21 @@ fetch(CSV_FILE)
         const dataRows = rows.slice(1);
 
         // 必要な列だけ取得
-        works = dataRows.map(row => {
+        works = dataRows
 
-            return {
-                artist: row[1] || '',
-                title: row[2] || '',
-                image: row[3] || '',
-                price: row[4] || '',
-                size: row[9] || ''
-            };
+            // 16列目（レジステータス）が「登録済」のものだけ
+            .filter(row => row[15] === '登録済')
+            .map(row => {
 
-        });
+                return {
+                    artist: row[1] || '',
+                    title: row[2] || '',
+                    image: row[3] || '',
+                    price: row[4] || '',
+                    size: row[9] || ''
+                };
+
+            });
 
         // 作家名・作品名が空の行を除外
         works = works.filter(work => {
