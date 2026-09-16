@@ -26,9 +26,8 @@ fetch(CSV_FILE)
 
         console.log('CSV行数:', rows.length);
 
-        // 12行目から作品データ
-        // JavaScriptでは0始まりなので11
-        const dataRows = rows.slice(11);
+        // 2行目から作品データ
+        const dataRows = rows.slice(1);
 
         // 必要な列だけ取得
         works = dataRows.map(row => {
