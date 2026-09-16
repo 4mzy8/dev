@@ -53,9 +53,13 @@ works = registeredRows.map(row => {
 
 const mergeTitlePrefixes = [
     '一輪の花',
-    // '作品A',
-    // '作品B',
-    // '○○の作品',
+    '●境界線',
+    '⚫️花畑',
+    '⚫️N陶芸',
+    '平和の像/peace statue',
+    '原爆ドームの壁面',
+    '個性と才',
+    '',
 ];
 
 
