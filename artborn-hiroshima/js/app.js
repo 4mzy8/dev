@@ -527,7 +527,7 @@ function convertDriveUrl(url) {
     return (
         'https://drive.google.com/thumbnail' +
         '?id=' + encodeURIComponent(fileId) +
-        '&sz=w400'
+        '&sz=w50'
     );
 
 }
