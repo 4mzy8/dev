@@ -3,55 +3,180 @@ const CSV_FILE = './data/works.csv';
 let works = [];
 
 
+// ==============================
 // CSV読み込み
-Papa.parse(CSV_FILE, {
+// ==============================
 
-    download: true,
+fetch(CSV_FILE)
 
-    header: true,
+    .then(response => {
 
-    skipEmptyLines: true,
+        if (!response.ok) {
+            throw new Error('CSVファイルの読み込みに失敗しました');
+        }
 
-complete: function(results) {
+        return response.text();
 
-    // CSVの12行目から作品データ
-    works = results.data.slice(10);
+    })
 
-    // 列番号でデータを取得
-    works = works.map(row => {
+    .then(csv => {
 
-        return {
-            artist: row[1] || '',
-            title: row[2] || '',
-            image: row[3] || '',
-            price: row[4] || '',
-            size: row[9] || '',
-            registerStatus: row[16] || '',
-            ecStatus: row[17] || ''
-        };
+        // CSVを解析
+        const rows = parseCSV(csv);
+
+        console.log('CSV行数:', rows.length);
+
+        // 12行目から作品データ
+        // JavaScriptでは0始まりなので11
+        const dataRows = rows.slice(11);
+
+        // 必要な列だけ取得
+        works = dataRows.map(row => {
+
+            return {
+                artist: row[1] || '',
+                title: row[2] || '',
+                image: row[3] || '',
+                price: row[4] || '',
+                size: row[9] || ''
+            };
+
+        });
+
+        // 作家名・作品名が空の行を除外
+        works = works.filter(work => {
+
+            return work.artist || work.title;
+
+        });
+
+
+        console.log('作品数:', works.length);
+        console.log(works);
+
+
+        // 作家名フィルタ作成
+        createArtistFilter();
+
+
+        // 作品表示
+        renderWorks();
+
+    })
+
+    .catch(error => {
+
+        console.error(error);
+
+        document.getElementById('works').innerHTML =
+            '<p>作品データの読み込みに失敗しました。</p>';
 
     });
 
-    // 空データを除外
-    works = works.filter(work => {
-        return work.artist || work.title;
-    });
 
-    console.log('読み込んだ作品数:', works.length);
-    console.log(works);
 
-    createArtistFilter();
+// ==============================
+// CSV解析
+// ==============================
 
-    renderWorks();
+function parseCSV(csv) {
 
-}
+    const rows = [];
+
+    let row = [];
+    let value = '';
+
+    let inQuotes = false;
+
+
+    for (let i = 0; i < csv.length; i++) {
+
+        const char = csv[i];
+        const next = csv[i + 1];
+
+
+        // ダブルクォート
+        if (char === '"') {
+
+            // "" → "
+            if (inQuotes && next === '"') {
+
+                value += '"';
+
+                i++;
+
+            } else {
+
+                inQuotes = !inQuotes;
+
+            }
+
+            continue;
+
+        }
+
+
+        // カンマ
+        if (char === ',' && !inQuotes) {
+
+            row.push(value);
+
+            value = '';
+
+            continue;
+
+        }
+
+
+        // 改行
+        if (
+            (char === '\n' || char === '\r') &&
+            !inQuotes
+        ) {
+
+            // CRLFの場合
+            if (char === '\r' && next === '\n') {
+                i++;
+            }
+
+            row.push(value);
+
+            rows.push(row);
+
+            row = [];
+
+            value = '';
+
+            continue;
+
+        }
+
+
+        value += char;
 
     }
 
-});
+
+    // 最後の行
+    if (value !== '' || row.length > 0) {
+
+        row.push(value);
+
+        rows.push(row);
+
+    }
 
 
-// 作家名フィルタ生成
+    return rows;
+
+}
+
+
+
+// ==============================
+// 作家名フィルタ
+// ==============================
+
 function createArtistFilter() {
 
     const select = document.getElementById('artist');
@@ -64,13 +189,17 @@ function createArtistFilter() {
         )
     ];
 
+
     artists.sort();
+
 
     artists.forEach(artist => {
 
-        const option = document.createElement('option');
+        const option =
+            document.createElement('option');
 
         option.value = artist;
+
         option.textContent = artist;
 
         select.appendChild(option);
@@ -80,108 +209,173 @@ function createArtistFilter() {
 }
 
 
+
+// ==============================
 // 作品表示
+// ==============================
+
 function renderWorks() {
 
-    const container = document.getElementById('works');
-
-    const artist = document.getElementById('artist').value;
-
-    const priceRange = document.getElementById('price').value;
-
-    const size = document.getElementById('size').value.toLowerCase();
-
-    const keyword = document.getElementById('keyword').value.toLowerCase();
+    const container =
+        document.getElementById('works');
 
 
-    const filtered = works.filter(work => {
-
-        // 作家名
-        if (artist && work.artist !== artist) {
-            return false;
-        }
+    const artist =
+        document.getElementById('artist').value;
 
 
-        // 金額
-        if (priceRange) {
+    const priceRange =
+        document.getElementById('price').value;
 
-            const price = parseInt(
-                work.price.replace(/[^\d]/g, ''),
-                10
-            ) || 0;
 
-            const [min, max] = priceRange.split('-').map(Number);
+    const size =
+        document.getElementById('size').value
+            .toLowerCase();
 
-            if (price < min || price > max) {
+
+    const keyword =
+        document.getElementById('keyword').value
+            .toLowerCase();
+
+
+    const filtered =
+        works.filter(work => {
+
+
+            // 作家名
+            if (
+                artist &&
+                work.artist !== artist
+            ) {
+
                 return false;
+
             }
 
-        }
+
+            // 金額
+            if (priceRange) {
+
+                const price =
+                    parseInt(
+                        work.price.replace(/[^\d]/g, ''),
+                        10
+                    ) || 0;
 
 
-        // サイズ
-        if (
-            size &&
-            !work.size.toLowerCase().includes(size)
-        ) {
-            return false;
-        }
+                const [min, max] =
+                    priceRange.split('-')
+                        .map(Number);
 
 
-        // キーワード
-        if (keyword) {
+                if (
+                    price < min ||
+                    price > max
+                ) {
 
-            const text =
-                `${work.artist} ${work.title}`.toLowerCase();
+                    return false;
 
-            if (!text.includes(keyword)) {
-                return false;
+                }
+
             }
 
-        }
 
-        return true;
+            // サイズ
+            if (
+                size &&
+                !work.size
+                    .toLowerCase()
+                    .includes(size)
+            ) {
 
-    });
+                return false;
+
+            }
 
 
-    document.getElementById('result-count').textContent =
-        filtered.length;
+            // キーワード
+            if (keyword) {
+
+                const text =
+                    `${work.artist} ${work.title}`
+                        .toLowerCase();
 
 
+                if (!text.includes(keyword)) {
+
+                    return false;
+
+                }
+
+            }
+
+
+            return true;
+
+        });
+
+
+    // 件数
+    document.getElementById(
+        'result-count'
+    ).textContent = filtered.length;
+
+
+    // 初期化
     container.innerHTML = '';
 
 
+    // 作品カード
     filtered.forEach(work => {
 
-        const card = document.createElement('article');
+        const card =
+            document.createElement('article');
+
 
         card.className = 'work-card';
+
+
+        const imageUrl =
+            convertDriveUrl(work.image);
 
 
         card.innerHTML = `
 
             <div class="work-image">
 
-                <img
-                    src="${convertDriveUrl(work.image)}"
-                    alt="${escapeHtml(work.title)}"
-                    loading="lazy"
-                >
+                ${
+                    imageUrl
+                    ?
+                    `<img
+                        src="${imageUrl}"
+                        alt="${escapeHtml(work.title)}"
+                        loading="lazy"
+                    >`
+                    :
+                    `<div class="no-image">
+                        画像なし
+                    </div>`
+                }
 
             </div>
 
+
             <div class="work-info">
 
-                <h2>${escapeHtml(work.title)}</h2>
+                <h2>
+                    ${escapeHtml(work.title)}
+                </h2>
+
 
                 <p class="artist">
                     ${escapeHtml(work.artist)}
                 </p>
 
+
                 <p class="price">
                     ${escapeHtml(work.price)}
                 </p>
+
 
                 <p class="size">
                     ${escapeHtml(work.size)}
@@ -199,23 +393,61 @@ function renderWorks() {
 }
 
 
-// Google Drive URL → 画像URL
+
+// ==============================
+// Google Drive画像URL変換
+// ==============================
+
 function convertDriveUrl(url) {
 
-    const match = url.match(/id=([^)&]+)/);
-
-    if (!match) {
+    if (!url) {
         return '';
     }
 
-    const fileId = match[1];
 
-    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+    // Markdown形式
+    // [表示URL](実URL)
+    const markdownMatch =
+        url.match(/\]\((.*?)\)/);
+
+
+    if (markdownMatch) {
+
+        url = markdownMatch[1];
+
+    }
+
+
+    // Google DriveのID
+    const idMatch =
+        url.match(/[?&]id=([^&]+)/);
+
+
+    if (!idMatch) {
+
+        return '';
+
+    }
+
+
+    const fileId =
+        idMatch[1];
+
+
+    return (
+        'https://drive.google.com/thumbnail' +
+        '?id=' + encodeURIComponent(fileId) +
+        '&sz=w1000'
+    );
 
 }
 
 
+
+// ==============================
 // HTMLエスケープ
+// ==============================
+
 function escapeHtml(value) {
 
     return String(value)
@@ -229,19 +461,38 @@ function escapeHtml(value) {
 }
 
 
-// フィルタ変更
+
+// ==============================
+// フィルタイベント
+// ==============================
+
 document
     .getElementById('artist')
-    .addEventListener('change', renderWorks);
+    .addEventListener(
+        'change',
+        renderWorks
+    );
+
 
 document
     .getElementById('price')
-    .addEventListener('change', renderWorks);
+    .addEventListener(
+        'change',
+        renderWorks
+    );
+
 
 document
     .getElementById('size')
-    .addEventListener('input', renderWorks);
+    .addEventListener(
+        'input',
+        renderWorks
+    );
+
 
 document
     .getElementById('keyword')
-    .addEventListener('input', renderWorks);
+    .addEventListener(
+        'input',
+        renderWorks
+    );
