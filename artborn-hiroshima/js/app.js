@@ -29,22 +29,70 @@ fetch(CSV_FILE)
         // 2行目から作品データ
         const dataRows = rows.slice(1);
 
-        // 必要な列だけ取得
-        works = dataRows
+// 16列目が「登録済」のものだけ取得
+const registeredRows = dataRows
+    .filter(row => row[15] === '登録済');
 
-            // 16列目（レジステータス）が「登録済」のものだけ
-            .filter(row => row[15] === '登録済')
-            .map(row => {
+// 作品データ
+works = registeredRows.map(row => {
 
-                return {
-                    artist: row[1] || '',
-                    title: row[2] || '',
-                    image: row[3] || '',
-                    price: row[4] || '',
-                    size: row[9] || ''
-                };
+    return {
+        artist: row[1] || '',
+        title: row[2] || '',
+        image: row[3] || '',
+        price: row[4] || '',
+        size: row[9] || ''
+    };
 
-            });
+});
+
+
+// ==============================
+// 同じ作品名をまとめる
+// ==============================
+
+const titleCount = {};
+
+works.forEach(work => {
+
+    if (work.title) {
+
+        titleCount[work.title] =
+            (titleCount[work.title] || 0) + 1;
+
+    }
+
+});
+
+
+// 同じ作品名は1件だけ表示
+works = works.filter((work, index, array) => {
+
+    return array.findIndex(item =>
+        item.title === work.title
+    ) === index;
+
+});
+
+
+// 「他XX作品」の表示情報を追加
+works.forEach(work => {
+
+    const count = titleCount[work.title] || 1;
+
+    if (count > 1) {
+
+        work.titleDisplay =
+            `${work.title}　他${count - 1}作品`;
+
+    } else {
+
+        work.titleDisplay =
+            work.title;
+
+    }
+
+});
 
         // 作家名・作品名が空の行を除外
         works = works.filter(work => {
@@ -366,7 +414,7 @@ function renderWorks() {
             <div class="work-info">
 
                 <h2>
-                    ${escapeHtml(work.title)}
+                    ${escapeHtml(work.titleDisplay)}
                 </h2>
 
 
