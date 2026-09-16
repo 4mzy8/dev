@@ -51,13 +51,29 @@ works = registeredRows.map(row => {
 // 同じ作品名をまとめる
 // ==============================
 
-// 作品名から末尾の丸数字を削除して
-// 同じ作品かどうか判定する
+const mergeTitlePrefixes = [
+    '一輪の花',
+    // '作品A',
+    // '作品B',
+    // '○○の作品',
+];
+
+
 function getTitleKey(title) {
 
-    return title
-        .replace(/[①②③④⑤⑥⑦⑧⑨⑩]+$/g, '')
-        .trim();
+    title = title.trim();
+
+    // 指定した文字列で始まる作品名はまとめる
+    for (const prefix of mergeTitlePrefixes) {
+
+        if (title.startsWith(prefix)) {
+            return prefix;
+        }
+
+    }
+
+    // リストにない作品は、そのまま
+    return title;
 
 }
 
