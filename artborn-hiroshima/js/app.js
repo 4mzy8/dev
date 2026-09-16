@@ -1,4 +1,4 @@
-const CSV_FILE = './data/works.csv';
+const CSV_FILE = '../data/works.csv';
 
 let works = [];
 
