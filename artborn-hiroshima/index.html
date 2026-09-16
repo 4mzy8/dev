@@ -1,1 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>作品一覧</title>
+
+    <link rel="stylesheet" href="./css/style.css">
+
+    <!-- Papa Parse -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.3/papaparse.min.js"></script>
+</head>
+
+<body>
+
+<main class="container">
+
+    <h1>作品一覧</h1>
+
+    <div class="filters">
+
+        <div class="filter">
+            <label for="artist">作家名</label>
+            <select id="artist">
+                <option value="">すべて</option>
+            </select>
+        </div>
+
+        <div class="filter">
+            <label for="price">価格</label>
+            <select id="price">
+                <option value="">すべて</option>
+                <option value="0-50000">～50,000円</option>
+                <option value="50001-100000">50,001～100,000円</option>
+                <option value="100001-300000">100,001～300,000円</option>
+                <option value="300001-999999999">300,001円～</option>
+            </select>
+        </div>
+
+        <div class="filter">
+            <label for="size">作品サイズ</label>
+            <input
+                type="text"
+                id="size"
+                placeholder="例：F6"
+            >
+        </div>
+
+        <div class="filter">
+            <label for="keyword">キーワード</label>
+            <input
+                type="text"
+                id="keyword"
+                placeholder="作品名・作家名"
+            >
+        </div>
+
+    </div>
+
+    <div class="result-info">
+        <span id="result-count">0</span> 件
+    </div>
+
+    <div id="works" class="works"></div>
+
+</main>
+
+<script src="./js/app.js"></script>
+
+</body>
+</html>
