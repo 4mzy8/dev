@@ -122,7 +122,7 @@ works.forEach(work => {
     if (count > 1) {
 
         work.titleDisplay =
-            `${titleKey}　他${count - 1}作品`;
+            `${titleKey}　　　他${count - 1}作品`;
 
     } else {
 
@@ -527,7 +527,7 @@ function convertDriveUrl(url) {
     return (
         'https://drive.google.com/thumbnail' +
         '?id=' + encodeURIComponent(fileId) +
-        '&sz=w50'
+        '&sz=w400'
     );
 
 }
