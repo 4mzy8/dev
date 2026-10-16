@@ -59,6 +59,7 @@ const mergeTitlePrefixes = [
     '平和の像/peace statue',
     '原爆ドームの壁面',
     '個性と才能',
+    '夜空のゾウさん',
 ];
 
 
