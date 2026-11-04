@@ -34,9 +34,12 @@ const registeredRows = dataRows
     .filter(row => row[15] === '登録済');
 
 // tmp
-console.log('CSV列数:', registeredRows[0].length);
+// CSVの列数と20列目を確認
+console.log('CSV列数:', rows[0].length);
+console.log('20列目の項目名:', rows[0][19]);
 
-registeredRows.slice(0, 10).forEach((row, index) => {
+// 先頭10件のデータを確認
+dataRows.slice(0, 10).forEach((row, index) => {
     console.log({
         行番号: index + 2,
         19列目: row[18],
