@@ -35,16 +35,16 @@ const registeredRows = dataRows
 
 // tmp
 // CSVの列数と20列目を確認
-console.log('CSV列数:', rows[0].length);
-console.log('20列目の項目名:', rows[0][19]);
+console.log("CSV列数:", rows[0].length);
+console.log("20列目の項目名:", rows[0][19]);
 
 // 先頭10件のデータを確認
 dataRows.slice(0, 10).forEach((row, index) => {
     console.log({
-        行番号: index + 2,
-        19列目: row[18],
-        20列目: row[19],
-        21列目: row[20]
+        rowNumber: index + 2,
+        column19: row[18],
+        column20: row[19],
+        column21: row[20]
     });
 });
 // tmp
