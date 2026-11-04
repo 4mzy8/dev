@@ -414,10 +414,6 @@ function renderWorks() {
 
         });
 
-    const reserved =
-    document.getElementById('reserved').value;
-
-
     // 件数
     document.getElementById(
         'result-count'
