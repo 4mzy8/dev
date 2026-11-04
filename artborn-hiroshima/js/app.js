@@ -35,40 +35,15 @@ const registeredRows = dataRows
         
 // 作品データ
 works = registeredRows.map(row => {
-
     return {
         artist: row[1] || '',
         title: row[2] || '',
         image: row[3] || '',
         price: row[4] || '',
         size: row[9] || '',
-
-        // 20列目：保管作品判定
         reserved: String(row[19] || '').trim().toUpperCase() === 'TRUE'
     };
-
 });
-
-//tmp
-console.log(
-    '取り込み後 TRUE件数:',
-    works.filter(work => work.reserved === true).length
-);
-
-console.log(
-    '取り込み後 FALSE件数:',
-    works.filter(work => work.reserved === false).length
-);
-
-console.log(
-    '保管作品の値のサンプル:',
-    works.slice(0, 10).map(work => ({
-        title: work.title,
-        reserved: work.reserved,
-        type: typeof work.reserved
-    }))
-);
-//tmp
 
 // ==============================
 // 同じ作品名をまとめる
@@ -132,7 +107,11 @@ works = works.filter(work => {
     displayedTitles.add(titleKey);
 
     // 保管作品
-    if (reserved && !work.reserved) {
+    if (reserved === 'true' && !work.reserved) {
+        return false;
+    }
+
+    if (reserved === 'false' && work.reserved) {
         return false;
     }
     
@@ -434,7 +413,7 @@ function renderWorks() {
         });
 
     const reserved =
-    document.getElementById('reserved').checked;
+    document.getElementById('reserved').value;
 
 
     // 件数
