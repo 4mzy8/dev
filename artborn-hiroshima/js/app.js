@@ -49,6 +49,26 @@ works = registeredRows.map(row => {
 
 });
 
+//tmp
+console.log(
+    '取り込み後 TRUE件数:',
+    works.filter(work => work.reserved === true).length
+);
+
+console.log(
+    '取り込み後 FALSE件数:',
+    works.filter(work => work.reserved === false).length
+);
+
+console.log(
+    '保管作品の値のサンプル:',
+    works.slice(0, 10).map(work => ({
+        title: work.title,
+        reserved: work.reserved,
+        type: typeof work.reserved
+    }))
+);
+//tmp
 
 // ==============================
 // 同じ作品名をまとめる
