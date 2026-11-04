@@ -33,6 +33,19 @@ fetch(CSV_FILE)
 const registeredRows = dataRows
     .filter(row => row[15] === '登録済');
 
+// tmp
+console.log('CSV列数:', registeredRows[0].length);
+
+registeredRows.slice(0, 10).forEach((row, index) => {
+    console.log({
+        行番号: index + 2,
+        19列目: row[18],
+        20列目: row[19],
+        21列目: row[20]
+    });
+});
+// tmp
+        
 // 作品データ
 works = registeredRows.map(row => {
 
