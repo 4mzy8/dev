@@ -32,21 +32,6 @@ fetch(CSV_FILE)
 // 16列目が「登録済」のものだけ取得
 const registeredRows = dataRows
     .filter(row => row[15] === '登録済');
-
-// tmp
-// CSVの20列目の値を集計
-const trueCount = registeredRows.filter(
-    row => String(row[19]).trim().toUpperCase() === 'TRUE'
-).length;
-
-const falseCount = registeredRows.filter(
-    row => String(row[19]).trim().toUpperCase() === 'FALSE'
-).length;
-
-console.log('TRUE件数:', trueCount);
-console.log('FALSE件数:', falseCount);
-console.log('全件数:', registeredRows.length);
-// tmp
         
 // 作品データ
 works = registeredRows.map(row => {
@@ -59,7 +44,7 @@ works = registeredRows.map(row => {
         size: row[9] || '',
 
         // 20列目：保管作品判定
-        reserved: String(row[19] || '').trim().toLowerCase() === 'true'
+        reserved: String(row[19] || '').trim().toUpperCase() === 'TRUE'
     };
 
 });
