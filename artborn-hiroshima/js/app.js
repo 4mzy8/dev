@@ -34,19 +34,18 @@ const registeredRows = dataRows
     .filter(row => row[15] === '登録済');
 
 // tmp
-// CSVの列数と20列目を確認
-console.log("CSV列数:", rows[0].length);
-console.log("20列目の項目名:", rows[0][19]);
+// CSVの20列目の値を集計
+const trueCount = registeredRows.filter(
+    row => String(row[19]).trim().toUpperCase() === 'TRUE'
+).length;
 
-// 先頭10件のデータを確認
-dataRows.slice(0, 10).forEach((row, index) => {
-    console.log({
-        rowNumber: index + 2,
-        column19: row[18],
-        column20: row[19],
-        column21: row[20]
-    });
-});
+const falseCount = registeredRows.filter(
+    row => String(row[19]).trim().toUpperCase() === 'FALSE'
+).length;
+
+console.log('TRUE件数:', trueCount);
+console.log('FALSE件数:', falseCount);
+console.log('全件数:', registeredRows.length);
 // tmp
         
 // 作品データ
