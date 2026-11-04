@@ -54,11 +54,14 @@
                 placeholder="作品名・作家名"
             >
         </div>
+
         <div class="filter">
-            <label for="reserved">
-            <input type="checkbox" id="reserved">
-                保管作品
-            </label>
+            <label for="reserved">保管状況</label>
+            <select id="reserved">
+                <option value="all">すべて</option>
+                <option value="true">保管する</option>
+                <option value="false">保管しない</option>
+            </select>
         </div>
     </div>
 
