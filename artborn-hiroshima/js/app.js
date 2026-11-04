@@ -106,15 +106,6 @@ works = works.filter(work => {
 
     displayedTitles.add(titleKey);
 
-    // 保管作品
-    if (reserved === 'true' && !work.reserved) {
-        return false;
-    }
-
-    if (reserved === 'false' && work.reserved) {
-        return false;
-    }
-    
     return true;
 
 });
@@ -335,7 +326,10 @@ function renderWorks() {
         document.getElementById('keyword').value
             .toLowerCase();
 
-
+    // 保管状況
+    const reserved =
+        document.getElementById('reserved').value;
+    
     const filtered =
         works.filter(work => {
 
@@ -407,6 +401,14 @@ function renderWorks() {
 
             }
 
+            // 保管状況
+            if (reserved === 'true' && !work.reserved) {
+                return false;
+            }
+
+            if (reserved === 'false' && work.reserved) {
+                return false;
+            }
 
             return true;
 
