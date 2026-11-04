@@ -41,7 +41,10 @@ works = registeredRows.map(row => {
         title: row[2] || '',
         image: row[3] || '',
         price: row[4] || '',
-        size: row[9] || ''
+        size: row[9] || '',
+
+        // 20列目：保管作品判定
+        reserved: String(row[19] || '').trim().toLowerCase() === 'true'
     };
 
 });
@@ -108,6 +111,11 @@ works = works.filter(work => {
 
     displayedTitles.add(titleKey);
 
+    // 保管作品
+    if (reserved && !work.reserved) {
+        return false;
+    }
+    
     return true;
 
 });
@@ -405,6 +413,9 @@ function renderWorks() {
 
         });
 
+    const reserved =
+    document.getElementById('reserved').checked;
+
 
     // 件数
     document.getElementById(
@@ -435,6 +446,12 @@ function renderWorks() {
             <div class="work-image">
 
                 ${
+                    work.reserved
+                    ? `<span class="reserved-badge">保管作品</span>`
+                    : ''
+                }
+
+                ${
                     imageUrl
                     ?
                     `<img
@@ -449,7 +466,6 @@ function renderWorks() {
                 }
 
             </div>
-
 
             <div class="work-info">
 
@@ -585,5 +601,12 @@ document
     .getElementById('keyword')
     .addEventListener(
         'input',
+        renderWorks
+    );
+
+document
+    .getElementById('reserved')
+    .addEventListener(
+        'change',
         renderWorks
     );
